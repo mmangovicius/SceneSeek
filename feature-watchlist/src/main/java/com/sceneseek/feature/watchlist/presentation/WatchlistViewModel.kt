@@ -6,12 +6,12 @@ import com.sceneseek.core.domain.model.WatchlistItem
 import com.sceneseek.core.domain.repository.WatchlistRepository
 import com.sceneseek.feature.watchlist.domain.usecase.ToggleWatchlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -37,8 +37,8 @@ class WatchlistViewModel @Inject constructor(
     private val _state = MutableStateFlow(WatchlistState())
     val state: StateFlow<WatchlistState> = _state.asStateFlow()
 
-    private val _navEvents = MutableSharedFlow<WatchlistNavEvent>()
-    val navEvents: SharedFlow<WatchlistNavEvent> = _navEvents.asSharedFlow()
+    private val _navEvents = Channel<WatchlistNavEvent>(Channel.BUFFERED)
+    val navEvents: Flow<WatchlistNavEvent> = _navEvents.receiveAsFlow()
 
     init {
         watchlistRepository.getAll()
@@ -54,7 +54,7 @@ class WatchlistViewModel @Inject constructor(
                 is com.sceneseek.core.domain.model.MediaType.Movie -> "movie"
                 is com.sceneseek.core.domain.model.MediaType.TvShow -> "tv"
             }
-            _navEvents.emit(WatchlistNavEvent.NavigateToDetail(item.mediaId, mediaType))
+            _navEvents.send(WatchlistNavEvent.NavigateToDetail(item.mediaId, mediaType))
         }
     }
 

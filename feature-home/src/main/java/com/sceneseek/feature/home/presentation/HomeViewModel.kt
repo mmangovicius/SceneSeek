@@ -12,12 +12,13 @@ import com.sceneseek.feature.home.domain.usecase.GetTopRatedMoviesUseCase
 import com.sceneseek.feature.home.domain.usecase.GetTopRatedTvUseCase
 import com.sceneseek.feature.home.domain.usecase.GetTrendingUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
@@ -50,8 +51,8 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState(isLoading = true))
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
-    private val _navEvents = MutableSharedFlow<HomeNavEvent>()
-    val navEvents: SharedFlow<HomeNavEvent> = _navEvents.asSharedFlow()
+    private val _navEvents = Channel<HomeNavEvent>(Channel.BUFFERED)
+    val navEvents: Flow<HomeNavEvent> = _navEvents.receiveAsFlow()
 
     private var loadJob: Job? = null
 
@@ -94,8 +95,8 @@ class HomeViewModel @Inject constructor(
     fun onItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.emit(HomeNavEvent.NavigateToDetail(item.movie.id, "movie"))
-                is MediaItem.TvItem -> _navEvents.emit(HomeNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
+                is MediaItem.MovieItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.movie.id, "movie"))
+                is MediaItem.TvItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
             }
         }
     }

@@ -18,12 +18,12 @@ import com.sceneseek.feature.detail.domain.usecase.GetSimilarUseCase
 import com.sceneseek.feature.detail.domain.usecase.GetTrailersUseCase
 import com.sceneseek.feature.detail.domain.usecase.GetTvDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -62,8 +62,8 @@ class DetailViewModel @Inject constructor(
     private val _state = MutableStateFlow(DetailState())
     val state: StateFlow<DetailState> = _state.asStateFlow()
 
-    private val _navEvents = MutableSharedFlow<DetailNavEvent>()
-    val navEvents: SharedFlow<DetailNavEvent> = _navEvents.asSharedFlow()
+    private val _navEvents = Channel<DetailNavEvent>(Channel.BUFFERED)
+    val navEvents: Flow<DetailNavEvent> = _navEvents.receiveAsFlow()
 
     init {
         loadDetail()
@@ -128,15 +128,15 @@ class DetailViewModel @Inject constructor(
     fun onTrailerClicked(trailer: Trailer) {
         viewModelScope.launch {
             val url = "https://www.youtube.com/watch?v=${trailer.key}"
-            _navEvents.emit(DetailNavEvent.TrailerClicked(url))
+            _navEvents.send(DetailNavEvent.TrailerClicked(url))
         }
     }
 
     fun onSimilarItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.emit(DetailNavEvent.NavigateToDetail(item.movie.id, "movie"))
-                is MediaItem.TvItem -> _navEvents.emit(DetailNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
+                is MediaItem.MovieItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.movie.id, "movie"))
+                is MediaItem.TvItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
             }
         }
     }
