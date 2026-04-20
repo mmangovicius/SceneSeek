@@ -8,10 +8,12 @@ import com.sceneseek.core.domain.util.Result
 import com.sceneseek.moviestorage.dao.MovieDao
 import com.sceneseek.moviestorage.entity.MovieEntity
 import com.sceneseek.tmdb.api.service.TmdbMovieService
+import com.sceneseek.core.di.DispatcherProvider
 import com.sceneseek.tmdb.impl.util.toResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private fun <T> safeFlow(block: suspend kotlinx.coroutines.flow.FlowCollector<Result<T>>.() -> Unit): Flow<Result<T>> =
@@ -20,6 +22,7 @@ private fun <T> safeFlow(block: suspend kotlinx.coroutines.flow.FlowCollector<Re
 class RemoteMovieRepository @Inject constructor(
     private val movieService: TmdbMovieService,
     private val movieDao: MovieDao,
+    private val dispatchers: DispatcherProvider,
 ) : MovieRepository {
 
     override fun getPopularMovies(page: Int): Flow<Result<List<Movie>>> = safeFlow {
@@ -29,7 +32,9 @@ class RemoteMovieRepository @Inject constructor(
             when (result) {
                 is Result.Success -> {
                     val dtos = result.data.results
-                    movieDao.replaceAll(dtos.map { it.toEntity() })
+                    withContext(dispatchers.io) {
+                        movieDao.replaceAll(dtos.map { it.toEntity() })
+                    }
                     emit(Result.Success(dtos.map { dto ->
                         Movie(dto.id, dto.title, dto.posterPath, dto.backdropPath, dto.overview, dto.voteAverage, dto.releaseDate)
                     }))

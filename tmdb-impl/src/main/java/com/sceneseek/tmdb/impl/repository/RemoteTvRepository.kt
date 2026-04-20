@@ -8,10 +8,12 @@ import com.sceneseek.core.domain.util.Result
 import com.sceneseek.moviestorage.dao.TvShowDao
 import com.sceneseek.moviestorage.entity.TvShowEntity
 import com.sceneseek.tmdb.api.service.TmdbTvService
+import com.sceneseek.core.di.DispatcherProvider
 import com.sceneseek.tmdb.impl.util.toResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private fun <T> safeFlow(block: suspend kotlinx.coroutines.flow.FlowCollector<Result<T>>.() -> Unit): Flow<Result<T>> =
@@ -20,6 +22,7 @@ private fun <T> safeFlow(block: suspend kotlinx.coroutines.flow.FlowCollector<Re
 class RemoteTvRepository @Inject constructor(
     private val tvService: TmdbTvService,
     private val tvShowDao: TvShowDao,
+    private val dispatchers: DispatcherProvider,
 ) : TvRepository {
 
     override fun getPopularTv(page: Int): Flow<Result<List<TvShow>>> = safeFlow {
@@ -28,7 +31,9 @@ class RemoteTvRepository @Inject constructor(
         when (result) {
             is Result.Success -> {
                 val dtos = result.data.results
-                tvShowDao.replaceAll(dtos.map { it.toEntity() })
+                withContext(dispatchers.io) {
+                    tvShowDao.replaceAll(dtos.map { it.toEntity() })
+                }
                 emit(Result.Success(dtos.map { it.toDomain() }))
             }
             is Result.Error -> emit(Result.Error(result.throwable))
