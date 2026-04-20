@@ -75,15 +75,16 @@ class HomeViewModel @Inject constructor(
                 val popularTvData = if (popularTv is Result.Success) popularTv.data else emptyList()
                 val topMoviesData = if (topRatedMovies is Result.Success) topRatedMovies.data else emptyList()
                 val topTvData = if (topRatedTv is Result.Success) topRatedTv.data else emptyList()
-                val hasError = listOf(trending, popularMovies, popularTv, topRatedMovies, topRatedTv)
-                    .any { it is Result.Error }
+                val results = listOf(trending, popularMovies, popularTv, topRatedMovies, topRatedTv)
+                val isStillLoading = results.any { it is Result.Loading }
+                val hasError = results.any { it is Result.Error }
                 HomeState(
                     trending = trendingData,
                     popularMovies = popularMoviesData,
                     popularTv = popularTvData,
                     topRatedMovies = topMoviesData,
                     topRatedTv = topTvData,
-                    isLoading = false,
+                    isLoading = isStillLoading,
                     error = if (hasError) "Failed to load some content" else null,
                 )
             }.collect { newState ->
