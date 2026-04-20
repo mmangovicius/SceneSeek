@@ -15,7 +15,7 @@ import com.sceneseek.moviestorage.entity.WatchlistEntity
 @Database(
     entities = [MovieEntity::class, TvShowEntity::class, WatchlistEntity::class],
     version = 1,
-    exportSchema = false,
+    exportSchema = true,
 )
 @TypeConverters(DateConverter::class, MediaTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
