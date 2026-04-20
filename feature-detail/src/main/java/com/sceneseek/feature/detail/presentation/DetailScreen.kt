@@ -106,7 +106,7 @@ fun DetailScreen(
             }
             state.error != null -> ErrorState(
                 message = state.error ?: "Unknown error",
-                onRetry = {},
+                onRetry = viewModel::onRetry,
                 modifier = Modifier.padding(paddingValues),
             )
             else -> LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues)) {

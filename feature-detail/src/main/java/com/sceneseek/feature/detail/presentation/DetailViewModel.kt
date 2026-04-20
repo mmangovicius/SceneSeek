@@ -140,4 +140,9 @@ class DetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun onRetry() {
+        _state.update { it.copy(isLoading = true, error = null) }
+        loadDetail()
+    }
 }
