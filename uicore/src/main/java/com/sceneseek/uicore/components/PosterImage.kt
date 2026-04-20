@@ -7,6 +7,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.SubcomposeAsyncImage
+import com.sceneseek.core.util.ImageSize
+import com.sceneseek.core.util.TmdbImageUrlBuilder
 
 @Composable
 fun PosterImage(
@@ -14,7 +16,7 @@ fun PosterImage(
     modifier: Modifier = Modifier,
     contentDescription: String = "",
 ) {
-    val imageUrl = if (path != null) "https://image.tmdb.org/t/p/w342$path" else null
+    val imageUrl = TmdbImageUrlBuilder.buildUrl(path, ImageSize.W342)
     SubcomposeAsyncImage(
         model = imageUrl,
         contentDescription = contentDescription.ifEmpty { null },
