@@ -1,6 +1,5 @@
 package com.sceneseek.tmdb.impl.di
 
-import com.sceneseek.tmdb.api.service.TmdbConfigService
 import com.sceneseek.tmdb.api.service.TmdbMovieService
 import com.sceneseek.tmdb.api.service.TmdbSearchService
 import com.sceneseek.tmdb.api.service.TmdbTvService
@@ -71,7 +70,4 @@ object NetworkModule {
     fun provideTmdbSearchService(retrofit: Retrofit): TmdbSearchService =
         retrofit.create(TmdbSearchService::class.java)
 
-    @Provides @Singleton
-    fun provideTmdbConfigService(retrofit: Retrofit): TmdbConfigService =
-        retrofit.create(TmdbConfigService::class.java)
 }
