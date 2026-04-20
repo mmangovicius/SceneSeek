@@ -6,11 +6,14 @@ import com.sceneseek.moviestorage.dao.TvShowDao
 import com.sceneseek.tmdb.api.dto.TvShowDto
 import com.sceneseek.tmdb.api.model.PagedResponse
 import com.sceneseek.tmdb.api.service.TmdbTvService
+import com.sceneseek.testutils.TestDispatcherProvider
 import com.sceneseek.testutils.UnconfinedTestDispatcherExtension
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -31,7 +34,7 @@ internal class RemoteTvRepositoryTest {
 
     @BeforeEach
     fun setUp() {
-        repository = RemoteTvRepository(tvService, tvShowDao)
+        repository = RemoteTvRepository(tvService, tvShowDao, TestDispatcherProvider())
     }
 
     @Nested
@@ -58,8 +61,7 @@ internal class RemoteTvRepositoryTest {
 
             repository.getPopularTv().test { cancelAndIgnoreRemainingEvents() }
 
-            coVerify { tvShowDao.deleteAll() }
-            coVerify { tvShowDao.insertAll(any()) }
+            coVerify { tvShowDao.replaceAll(any()) }
         }
     }
 
@@ -69,6 +71,7 @@ internal class RemoteTvRepositoryTest {
         @Test
         fun `GIVEN IOException WHEN getPopularTv THEN emits Loading then Error`() = runTest {
             coEvery { tvService.getPopular(any()) } throws java.io.IOException("No network")
+            every { tvShowDao.getAll() } returns flowOf(emptyList())
 
             repository.getPopularTv().test {
                 assertTrue(awaitItem() is Result.Loading)

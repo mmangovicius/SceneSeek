@@ -6,11 +6,14 @@ import com.sceneseek.moviestorage.dao.MovieDao
 import com.sceneseek.tmdb.api.dto.MovieDto
 import com.sceneseek.tmdb.api.model.PagedResponse
 import com.sceneseek.tmdb.api.service.TmdbMovieService
+import com.sceneseek.testutils.TestDispatcherProvider
 import com.sceneseek.testutils.UnconfinedTestDispatcherExtension
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -31,7 +34,7 @@ internal class RemoteMovieRepositoryTest {
 
     @BeforeEach
     fun setUp() {
-        repository = RemoteMovieRepository(movieService, movieDao)
+        repository = RemoteMovieRepository(movieService, movieDao, TestDispatcherProvider())
     }
 
     @Nested
@@ -58,8 +61,7 @@ internal class RemoteMovieRepositoryTest {
 
             repository.getPopularMovies().test { cancelAndIgnoreRemainingEvents() }
 
-            coVerify { movieDao.deleteAll() }
-            coVerify { movieDao.insertAll(any()) }
+            coVerify { movieDao.replaceAll(any()) }
         }
 
         @Test
@@ -82,6 +84,7 @@ internal class RemoteMovieRepositoryTest {
         @Test
         fun `GIVEN IOException WHEN getPopularMovies THEN emits Loading then Error`() = runTest {
             coEvery { movieService.getPopular(any()) } throws java.io.IOException("No network")
+            every { movieDao.getAll() } returns flowOf(emptyList())
 
             repository.getPopularMovies().test {
                 assertTrue(awaitItem() is Result.Loading)
@@ -94,6 +97,7 @@ internal class RemoteMovieRepositoryTest {
         fun `GIVEN 401 response WHEN getPopularMovies THEN emits AuthException error`() = runTest {
             coEvery { movieService.getPopular(any()) } returns
                 Response.error(401, okhttp3.ResponseBody.create(null, ""))
+            every { movieDao.getAll() } returns flowOf(emptyList())
 
             repository.getPopularMovies().test {
                 assertTrue(awaitItem() is Result.Loading)

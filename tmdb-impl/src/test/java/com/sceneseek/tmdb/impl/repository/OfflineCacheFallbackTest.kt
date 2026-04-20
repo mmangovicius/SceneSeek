@@ -6,11 +6,14 @@ import com.sceneseek.moviestorage.dao.MovieDao
 import com.sceneseek.tmdb.api.dto.MovieDto
 import com.sceneseek.tmdb.api.model.PagedResponse
 import com.sceneseek.tmdb.api.service.TmdbMovieService
+import com.sceneseek.testutils.TestDispatcherProvider
 import com.sceneseek.testutils.UnconfinedTestDispatcherExtension
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -31,7 +34,7 @@ internal class OfflineCacheFallbackTest {
 
     @BeforeEach
     fun setUp() {
-        repository = RemoteMovieRepository(movieService, movieDao)
+        repository = RemoteMovieRepository(movieService, movieDao, TestDispatcherProvider())
     }
 
     @Nested
@@ -40,6 +43,7 @@ internal class OfflineCacheFallbackTest {
         @Test
         fun `GIVEN IOException WHEN getPopularMovies THEN emits Error`() = runTest {
             coEvery { movieService.getPopular(any()) } throws IOException("No network")
+            every { movieDao.getAll() } returns flowOf(emptyList())
 
             repository.getPopularMovies(1).test {
                 assertTrue(awaitItem() is Result.Loading)
@@ -63,8 +67,7 @@ internal class OfflineCacheFallbackTest {
                 awaitComplete()
             }
 
-            coVerify { movieDao.deleteAll() }
-            coVerify { movieDao.insertAll(any()) }
+            coVerify { movieDao.replaceAll(any()) }
         }
     }
 }
