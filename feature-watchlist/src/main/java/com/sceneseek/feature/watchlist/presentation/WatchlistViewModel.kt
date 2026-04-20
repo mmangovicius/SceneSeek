@@ -50,11 +50,7 @@ class WatchlistViewModel @Inject constructor(
 
     fun onItemClicked(item: WatchlistItem) {
         viewModelScope.launch {
-            val mediaType = when (item.mediaType) {
-                is com.sceneseek.core.domain.model.MediaType.Movie -> "movie"
-                is com.sceneseek.core.domain.model.MediaType.TvShow -> "tv"
-            }
-            _navEvents.send(WatchlistNavEvent.NavigateToDetail(item.mediaId, mediaType))
+            _navEvents.send(WatchlistNavEvent.NavigateToDetail(item.mediaId, item.mediaType.key))
         }
     }
 

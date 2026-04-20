@@ -1,6 +1,7 @@
 package com.sceneseek.tmdb.impl.repository
 
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.core.domain.repository.SearchRepository
@@ -26,11 +27,11 @@ class RemoteSearchRepository @Inject constructor(
             is Result.Success -> {
                 val items = result.data.results.mapNotNull { dto ->
                     when (dto.mediaType) {
-                        "movie" -> MediaItem.MovieItem(Movie(
+                        MediaType.KEY_MOVIE -> MediaItem.MovieItem(Movie(
                             dto.id, dto.title ?: "", dto.posterPath, null,
                             dto.overview ?: "", dto.voteAverage ?: 0.0, dto.releaseDate ?: ""
                         ))
-                        "tv" -> MediaItem.TvItem(TvShow(
+                        MediaType.KEY_TV -> MediaItem.TvItem(TvShow(
                             dto.id, dto.name ?: "", dto.posterPath, null,
                             dto.overview ?: "", dto.voteAverage ?: 0.0, dto.firstAirDate ?: ""
                         ))

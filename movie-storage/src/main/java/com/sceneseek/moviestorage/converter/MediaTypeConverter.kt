@@ -5,14 +5,8 @@ import com.sceneseek.core.domain.model.MediaType
 
 class MediaTypeConverter {
     @TypeConverter
-    fun fromMediaType(value: MediaType): String = when (value) {
-        is MediaType.Movie -> "movie"
-        is MediaType.TvShow -> "tv"
-    }
+    fun fromMediaType(value: MediaType): String = value.key
 
     @TypeConverter
-    fun toMediaType(value: String): MediaType = when (value) {
-        "movie" -> MediaType.Movie
-        else -> MediaType.TvShow
-    }
+    fun toMediaType(value: String): MediaType = MediaType.fromKey(value)
 }

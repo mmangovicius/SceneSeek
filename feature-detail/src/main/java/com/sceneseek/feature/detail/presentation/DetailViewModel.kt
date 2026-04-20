@@ -57,7 +57,7 @@ class DetailViewModel @Inject constructor(
 
     private val mediaId: Int = checkNotNull(savedStateHandle["mediaId"])
     private val mediaTypeStr: String = checkNotNull(savedStateHandle["mediaType"])
-    private val mediaType: MediaType = if (mediaTypeStr == "movie") MediaType.Movie else MediaType.TvShow
+    private val mediaType: MediaType = MediaType.fromKey(mediaTypeStr)
 
     private val _state = MutableStateFlow(DetailState())
     val state: StateFlow<DetailState> = _state.asStateFlow()
@@ -135,8 +135,8 @@ class DetailViewModel @Inject constructor(
     fun onSimilarItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.movie.id, "movie"))
-                is MediaItem.TvItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
+                is MediaItem.MovieItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE))
+                is MediaItem.TvItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV))
             }
         }
     }

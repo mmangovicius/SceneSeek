@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.uicore.components.MediaCard
 import com.sceneseek.uicore.components.ShimmerEffect
 
@@ -46,7 +47,10 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.navEvents.collect { event ->
             when (event) {
-                is HomeNavEvent.NavigateToDetail -> onNavigateToDetail(event.mediaId, event.mediaType)
+                is HomeNavEvent.NavigateToDetail -> onNavigateToDetail(
+                    event.mediaId,
+                    event.mediaType
+                )
             }
         }
     }
@@ -123,8 +127,21 @@ private fun ContentRow(
         ) {
             items(items) { item ->
                 val (id, posterPath, title2, rating, mediaType) = when (item) {
-                    is MediaItem.MovieItem -> MediaCardData(item.movie.id, item.movie.posterPath, item.movie.title, item.movie.voteAverage, "movie")
-                    is MediaItem.TvItem -> MediaCardData(item.tvShow.id, item.tvShow.posterPath, item.tvShow.name, item.tvShow.voteAverage, "tv")
+                    is MediaItem.MovieItem -> MediaCardData(
+                        item.movie.id,
+                        item.movie.posterPath,
+                        item.movie.title,
+                        item.movie.voteAverage,
+                        MediaType.KEY_MOVIE,
+                    )
+
+                    is MediaItem.TvItem -> MediaCardData(
+                        item.tvShow.id,
+                        item.tvShow.posterPath,
+                        item.tvShow.name,
+                        item.tvShow.voteAverage,
+                        MediaType.KEY_TV,
+                    )
                 }
                 MediaCard(
                     posterPath = posterPath,

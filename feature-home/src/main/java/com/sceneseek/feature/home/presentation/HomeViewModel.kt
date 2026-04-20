@@ -3,6 +3,7 @@ package com.sceneseek.feature.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.core.domain.util.Result
@@ -96,8 +97,8 @@ class HomeViewModel @Inject constructor(
     fun onItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.movie.id, "movie"))
-                is MediaItem.TvItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.tvShow.id, "tv"))
+                is MediaItem.MovieItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE))
+                is MediaItem.TvItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV))
             }
         }
     }

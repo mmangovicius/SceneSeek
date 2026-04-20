@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.uicore.components.EmptyState
 import com.sceneseek.uicore.components.ErrorState
 import com.sceneseek.uicore.components.PosterImage
@@ -64,8 +65,8 @@ fun SearchScreen(
                 items(state.items) { item ->
                     MediaListItem(item = item, onClick = {
                         when (item) {
-                            is MediaItem.MovieItem -> onNavigateToDetail(item.movie.id, "movie")
-                            is MediaItem.TvItem -> onNavigateToDetail(item.tvShow.id, "tv")
+                            is MediaItem.MovieItem -> onNavigateToDetail(item.movie.id, MediaType.KEY_MOVIE)
+                            is MediaItem.TvItem -> onNavigateToDetail(item.tvShow.id, MediaType.KEY_TV)
                         }
                     })
                 }

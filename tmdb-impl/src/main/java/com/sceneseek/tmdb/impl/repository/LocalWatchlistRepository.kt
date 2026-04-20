@@ -24,10 +24,7 @@ class LocalWatchlistRepository @Inject constructor(
 
     override suspend fun toggle(item: WatchlistItem) {
         withContext(dispatchers.io) {
-            val mediaTypeStr = when (item.mediaType) {
-                is MediaType.Movie -> "movie"
-                is MediaType.TvShow -> "tv"
-            }
+            val mediaTypeStr = item.mediaType.key
             val isWatched = watchlistDao.isWatchlisted(item.mediaId, mediaTypeStr).first()
             if (isWatched) {
                 watchlistDao.deleteByMediaId(item.mediaId, mediaTypeStr)
@@ -37,17 +34,12 @@ class LocalWatchlistRepository @Inject constructor(
         }
     }
 
-    override fun isWatchlisted(mediaId: Int, type: MediaType): Flow<Boolean> {
-        val mediaTypeStr = when (type) {
-            is MediaType.Movie -> "movie"
-            is MediaType.TvShow -> "tv"
-        }
-        return watchlistDao.isWatchlisted(mediaId, mediaTypeStr)
-    }
+    override fun isWatchlisted(mediaId: Int, type: MediaType): Flow<Boolean> =
+        watchlistDao.isWatchlisted(mediaId, type.key)
 
     private fun WatchlistEntity.toDomain() = WatchlistItem(
         mediaId = mediaId,
-        mediaType = if (mediaType == "movie") MediaType.Movie else MediaType.TvShow,
+        mediaType = MediaType.fromKey(mediaType),
         title = title,
         posterPath = posterPath,
         addedAt = addedAt,
@@ -55,7 +47,7 @@ class LocalWatchlistRepository @Inject constructor(
 
     private fun WatchlistItem.toEntity() = WatchlistEntity(
         mediaId = mediaId,
-        mediaType = when (mediaType) { is MediaType.Movie -> "movie"; is MediaType.TvShow -> "tv" },
+        mediaType = mediaType.key,
         title = title,
         posterPath = posterPath,
         addedAt = addedAt,
