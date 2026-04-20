@@ -33,7 +33,7 @@ data class HomeState(
     val topRatedMovies: List<Movie> = emptyList(),
     val topRatedTv: List<TvShow> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val hasError: Boolean = false,
 )
 
 sealed class HomeNavEvent {
@@ -86,7 +86,7 @@ class HomeViewModel @Inject constructor(
                     topRatedMovies = topMoviesData,
                     topRatedTv = topTvData,
                     isLoading = isStillLoading,
-                    error = if (hasError) "Failed to load some content" else null,
+                    hasError = hasError,
                 )
             }.collect { newState ->
                 _state.value = newState
@@ -104,7 +104,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onRetry() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, hasError = false) }
         loadContent()
     }
 }

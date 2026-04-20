@@ -19,6 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.sceneseek.feature.home.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,8 +42,9 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.error) {
-        state.error?.let { snackbarHostState.showSnackbar(it) }
+    val errorMessage = stringResource(R.string.home_error_load_content)
+    LaunchedEffect(state.hasError) {
+        if (state.hasError) snackbarHostState.showSnackbar(errorMessage)
     }
 
     LaunchedEffect(Unit) {

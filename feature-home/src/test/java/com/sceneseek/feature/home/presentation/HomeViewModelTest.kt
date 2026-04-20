@@ -18,8 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -59,7 +58,7 @@ internal class HomeViewModelTest {
             createViewModel().state.test {
                 val state = awaitItem()
                 assertFalse(state.isLoading)
-                assertNull(state.error)
+                assertFalse(state.hasError)
                 assertEquals(1, state.trending.size)
                 assertEquals(1, state.popularMovies.size)
                 assertEquals(1, state.popularTv.size)
@@ -94,7 +93,7 @@ internal class HomeViewModelTest {
 
             createViewModel().state.test {
                 val state = awaitItem()
-                assertNotNull(state.error)
+                assertTrue(state.hasError)
                 cancelAndIgnoreRemainingEvents()
             }
         }
