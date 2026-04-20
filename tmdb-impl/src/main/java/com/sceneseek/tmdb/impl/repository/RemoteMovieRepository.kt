@@ -168,13 +168,14 @@ class RemoteMovieRepository @Inject constructor(
         Movie(id, title, posterPath, backdropPath, overview, voteAverage, releaseDate)
 
     private fun MovieDto.toEntity(category: String) = MovieEntity(
-        id,
-        title,
-        overview,
-        posterPath,
-        backdropPath,
-        voteAverage,
-        releaseDate,
+        id = id,
+        title = title,
+        overview = overview,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        voteAverage = voteAverage,
+        releaseDate = releaseDate,
+        popularity = popularity,
         category = category
     )
 }

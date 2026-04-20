@@ -12,4 +12,5 @@ data class TvShowDto(
     @Json(name = "overview") val overview: String,
     @Json(name = "vote_average") val voteAverage: Double,
     @Json(name = "first_air_date") val firstAirDate: String,
+    @Json(name = "popularity") val popularity: Double = 0.0,
 )

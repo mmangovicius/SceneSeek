@@ -152,13 +152,14 @@ class RemoteTvRepository @Inject constructor(
         TvShow(id, name, posterPath, backdropPath, overview, voteAverage, firstAirDate)
 
     private fun TvShowDto.toEntity(category: String) = TvShowEntity(
-        id,
-        name,
-        overview,
-        posterPath,
-        backdropPath,
-        voteAverage,
-        firstAirDate,
+        id = id,
+        name = name,
+        overview = overview,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        voteAverage = voteAverage,
+        firstAirDate = firstAirDate,
+        popularity = popularity,
         category = category
     )
 }
