@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.sceneseek.moviestorage.entity.MovieEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -17,4 +18,10 @@ interface MovieDao {
 
     @Query("DELETE FROM movies")
     suspend fun deleteAll()
+
+    @Transaction
+    suspend fun replaceAll(movies: List<MovieEntity>) {
+        deleteAll()
+        insertAll(movies)
+    }
 }

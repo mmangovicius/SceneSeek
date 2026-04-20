@@ -29,8 +29,7 @@ class RemoteMovieRepository @Inject constructor(
             when (result) {
                 is Result.Success -> {
                     val dtos = result.data.results
-                    movieDao.deleteAll()
-                    movieDao.insertAll(dtos.map { it.toEntity() })
+                    movieDao.replaceAll(dtos.map { it.toEntity() })
                     emit(Result.Success(dtos.map { dto ->
                         Movie(dto.id, dto.title, dto.posterPath, dto.backdropPath, dto.overview, dto.voteAverage, dto.releaseDate)
                     }))

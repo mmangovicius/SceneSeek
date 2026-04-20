@@ -28,8 +28,7 @@ class RemoteTvRepository @Inject constructor(
         when (result) {
             is Result.Success -> {
                 val dtos = result.data.results
-                tvShowDao.deleteAll()
-                tvShowDao.insertAll(dtos.map { it.toEntity() })
+                tvShowDao.replaceAll(dtos.map { it.toEntity() })
                 emit(Result.Success(dtos.map { it.toDomain() }))
             }
             is Result.Error -> emit(Result.Error(result.throwable))

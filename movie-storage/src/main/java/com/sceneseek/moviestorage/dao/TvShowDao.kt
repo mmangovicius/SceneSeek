@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.sceneseek.moviestorage.entity.TvShowEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -17,4 +18,10 @@ interface TvShowDao {
 
     @Query("DELETE FROM tv_shows")
     suspend fun deleteAll()
+
+    @Transaction
+    suspend fun replaceAll(shows: List<TvShowEntity>) {
+        deleteAll()
+        insertAll(shows)
+    }
 }
