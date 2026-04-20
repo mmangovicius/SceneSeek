@@ -24,4 +24,19 @@ interface MovieDao {
         deleteAll()
         insertAll(movies)
     }
+
+    @Query("SELECT * FROM movies WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): MovieEntity?
+
+    @Query("SELECT * FROM movies WHERE category = :category ORDER BY popularity DESC")
+    fun getByCategory(category: String): Flow<List<MovieEntity>>
+
+    @Query("DELETE FROM movies WHERE category = :category")
+    suspend fun deleteByCategory(category: String)
+
+    @Transaction
+    suspend fun replaceByCategory(category: String, movies: List<MovieEntity>) {
+        deleteByCategory(category)
+        insertAll(movies)
+    }
 }

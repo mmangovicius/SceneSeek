@@ -61,7 +61,7 @@ internal class RemoteMovieRepositoryTest {
 
             repository.getPopularMovies().test { cancelAndIgnoreRemainingEvents() }
 
-            coVerify { movieDao.replaceAll(any()) }
+            coVerify { movieDao.replaceByCategory(any(), any()) }
         }
 
         @Test
@@ -84,7 +84,7 @@ internal class RemoteMovieRepositoryTest {
         @Test
         fun `GIVEN IOException WHEN getPopularMovies THEN emits Loading then Error`() = runTest {
             coEvery { movieService.getPopular(any()) } throws java.io.IOException("No network")
-            every { movieDao.getAll() } returns flowOf(emptyList())
+            every { movieDao.getByCategory(any()) } returns flowOf(emptyList())
 
             repository.getPopularMovies().test {
                 assertTrue(awaitItem() is Result.Loading)
@@ -97,7 +97,7 @@ internal class RemoteMovieRepositoryTest {
         fun `GIVEN 401 response WHEN getPopularMovies THEN emits AuthException error`() = runTest {
             coEvery { movieService.getPopular(any()) } returns
                 Response.error(401, okhttp3.ResponseBody.create(null, ""))
-            every { movieDao.getAll() } returns flowOf(emptyList())
+            every { movieDao.getByCategory(any()) } returns flowOf(emptyList())
 
             repository.getPopularMovies().test {
                 assertTrue(awaitItem() is Result.Loading)

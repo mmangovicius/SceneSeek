@@ -61,7 +61,7 @@ internal class RemoteTvRepositoryTest {
 
             repository.getPopularTv().test { cancelAndIgnoreRemainingEvents() }
 
-            coVerify { tvShowDao.replaceAll(any()) }
+            coVerify { tvShowDao.replaceByCategory(any(), any()) }
         }
     }
 
@@ -71,7 +71,7 @@ internal class RemoteTvRepositoryTest {
         @Test
         fun `GIVEN IOException WHEN getPopularTv THEN emits Loading then Error`() = runTest {
             coEvery { tvService.getPopular(any()) } throws java.io.IOException("No network")
-            every { tvShowDao.getAll() } returns flowOf(emptyList())
+            every { tvShowDao.getByCategory(any()) } returns flowOf(emptyList())
 
             repository.getPopularTv().test {
                 assertTrue(awaitItem() is Result.Loading)

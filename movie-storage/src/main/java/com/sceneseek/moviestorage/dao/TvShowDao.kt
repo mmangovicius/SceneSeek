@@ -24,4 +24,19 @@ interface TvShowDao {
         deleteAll()
         insertAll(shows)
     }
+
+    @Query("SELECT * FROM tv_shows WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): TvShowEntity?
+
+    @Query("SELECT * FROM tv_shows WHERE category = :category ORDER BY popularity DESC")
+    fun getByCategory(category: String): Flow<List<TvShowEntity>>
+
+    @Query("DELETE FROM tv_shows WHERE category = :category")
+    suspend fun deleteByCategory(category: String)
+
+    @Transaction
+    suspend fun replaceByCategory(category: String, shows: List<TvShowEntity>) {
+        deleteByCategory(category)
+        insertAll(shows)
+    }
 }

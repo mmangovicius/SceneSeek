@@ -43,7 +43,7 @@ internal class OfflineCacheFallbackTest {
         @Test
         fun `GIVEN IOException WHEN getPopularMovies THEN emits Error`() = runTest {
             coEvery { movieService.getPopular(any()) } throws IOException("No network")
-            every { movieDao.getAll() } returns flowOf(emptyList())
+            every { movieDao.getByCategory(any()) } returns flowOf(emptyList())
 
             repository.getPopularMovies(1).test {
                 assertTrue(awaitItem() is Result.Loading)
@@ -67,7 +67,7 @@ internal class OfflineCacheFallbackTest {
                 awaitComplete()
             }
 
-            coVerify { movieDao.replaceAll(any()) }
+            coVerify { movieDao.replaceByCategory(any(), any()) }
         }
     }
 }

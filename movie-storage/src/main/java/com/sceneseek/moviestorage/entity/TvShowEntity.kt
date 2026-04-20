@@ -15,5 +15,6 @@ data class TvShowEntity(
     @ColumnInfo(name = "vote_average") val voteAverage: Double,
     @ColumnInfo(name = "first_air_date") val firstAirDate: String,
     @ColumnInfo val popularity: Double = 0.0,
+    @ColumnInfo val category: String = "",
     @ColumnInfo(name = "cached_at") val cachedAt: Long = System.currentTimeMillis(),
 )

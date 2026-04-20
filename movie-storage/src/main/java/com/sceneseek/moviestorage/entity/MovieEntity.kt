@@ -15,5 +15,6 @@ data class MovieEntity(
     @ColumnInfo(name = "vote_average") val voteAverage: Double,
     @ColumnInfo(name = "release_date") val releaseDate: String,
     @ColumnInfo val popularity: Double = 0.0,
+    @ColumnInfo val category: String = "",
     @ColumnInfo(name = "cached_at") val cachedAt: Long = System.currentTimeMillis(),
 )

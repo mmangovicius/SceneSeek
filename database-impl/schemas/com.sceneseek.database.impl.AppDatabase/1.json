@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2e15dbb9e018e56e14b730f6ecc720dc",
+    "identityHash": "faa01a093ee336a72844a9b1dd42c4b6",
     "entities": [
       {
         "tableName": "movies",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `overview` TEXT NOT NULL, `poster_path` TEXT, `backdrop_path` TEXT, `vote_average` REAL NOT NULL, `release_date` TEXT NOT NULL, `popularity` REAL NOT NULL, `cached_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `overview` TEXT NOT NULL, `poster_path` TEXT, `backdrop_path` TEXT, `vote_average` REAL NOT NULL, `release_date` TEXT NOT NULL, `popularity` REAL NOT NULL, `category` TEXT NOT NULL, `cached_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -55,6 +55,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "cachedAt",
             "columnName": "cached_at",
             "affinity": "INTEGER",
@@ -81,7 +87,7 @@
       },
       {
         "tableName": "tv_shows",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `overview` TEXT NOT NULL, `poster_path` TEXT, `backdrop_path` TEXT, `vote_average` REAL NOT NULL, `first_air_date` TEXT NOT NULL, `popularity` REAL NOT NULL, `cached_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `overview` TEXT NOT NULL, `poster_path` TEXT, `backdrop_path` TEXT, `vote_average` REAL NOT NULL, `first_air_date` TEXT NOT NULL, `popularity` REAL NOT NULL, `category` TEXT NOT NULL, `cached_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -127,6 +133,12 @@
             "fieldPath": "popularity",
             "columnName": "popularity",
             "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -216,7 +228,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e15dbb9e018e56e14b730f6ecc720dc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'faa01a093ee336a72844a9b1dd42c4b6')"
     ]
   }
 }
