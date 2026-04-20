@@ -9,8 +9,7 @@ class NotFoundException(message: String) : Exception(message)
 class ServerException(val code: Int) : Exception("Server error: $code")
 class NetworkException(cause: Throwable) : Exception("Network error", cause)
 
-fun <T> Response<T>.toResult(): Result<T> {
-    return try {
+fun <T> Response<T>.toResult(): Result<T> = try {
         when {
             isSuccessful && body() != null -> Result.Success(body()!!)
             code() == 401 -> Result.Error(AuthException("Unauthorized — check API key"))
@@ -18,7 +17,6 @@ fun <T> Response<T>.toResult(): Result<T> {
             code() >= 500 -> Result.Error(ServerException(code()))
             else -> Result.Error(Exception("HTTP error: ${code()}"))
         }
-    } catch (e: IOException) {
-        Result.Error(NetworkException(e))
-    }
+} catch (e: IOException) {
+    Result.Error(NetworkException(e))
 }

@@ -19,6 +19,7 @@ junit-jupiter = "5.10.2"
 hilt-navigation-compose = "1.2.0"
 datastore = "1.1.2"
 activity-compose = "1.9.3"
+detekt = "1.23.7"
 
 [libraries]
 # Hilt
@@ -93,3 +94,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
