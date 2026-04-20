@@ -12,9 +12,6 @@
 .cxx/
 *.hprof
 
-# Gradle wrapper (keep gradlew scripts, ignore binary jar)
-gradle/wrapper/gradle-wrapper.jar
-
 # Keys
 keystore.properties
 *.jks
