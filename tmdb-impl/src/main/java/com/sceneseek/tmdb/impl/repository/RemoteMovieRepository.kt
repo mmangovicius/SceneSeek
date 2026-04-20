@@ -12,6 +12,7 @@ import com.sceneseek.core.di.DispatcherProvider
 import com.sceneseek.tmdb.impl.util.toResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -39,11 +40,23 @@ class RemoteMovieRepository @Inject constructor(
                         Movie(dto.id, dto.title, dto.posterPath, dto.backdropPath, dto.overview, dto.voteAverage, dto.releaseDate)
                     }))
                 }
-                is Result.Error -> emit(Result.Error(result.throwable))
+                is Result.Error -> {
+                    val cached = withContext(dispatchers.io) { movieDao.getAll().first() }
+                    if (cached.isNotEmpty()) {
+                        emit(Result.Success(cached.map { it.toDomain() }))
+                    } else {
+                        emit(Result.Error(result.throwable))
+                    }
+                }
                 else -> {}
             }
         } catch (e: Exception) {
-            emit(Result.Error(e))
+            val cached = withContext(dispatchers.io) { movieDao.getAll().first() }
+            if (cached.isNotEmpty()) {
+                emit(Result.Success(cached.map { it.toDomain() }))
+            } else {
+                emit(Result.Error(e))
+            }
         }
     }
 

@@ -12,6 +12,7 @@ import com.sceneseek.core.di.DispatcherProvider
 import com.sceneseek.tmdb.impl.util.toResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -36,7 +37,14 @@ class RemoteTvRepository @Inject constructor(
                 }
                 emit(Result.Success(dtos.map { it.toDomain() }))
             }
-            is Result.Error -> emit(Result.Error(result.throwable))
+            is Result.Error -> {
+                val cached = withContext(dispatchers.io) { tvShowDao.getAll().first() }
+                if (cached.isNotEmpty()) {
+                    emit(Result.Success(cached.map { it.toDomain() }))
+                } else {
+                    emit(Result.Error(result.throwable))
+                }
+            }
             else -> {}
         }
     }
