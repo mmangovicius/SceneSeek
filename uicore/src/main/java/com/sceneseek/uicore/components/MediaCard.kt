@@ -63,6 +63,7 @@ fun MediaCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodySmall,
+                minLines = 2,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
