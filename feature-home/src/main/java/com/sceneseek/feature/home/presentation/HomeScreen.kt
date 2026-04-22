@@ -79,7 +79,7 @@ private fun HomeContent(
     onRetry: () -> Unit = {},
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("SceneSeek") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.home_title)) }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         PullToRefreshBox(
@@ -93,35 +93,35 @@ private fun HomeContent(
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     item {
                         ContentRow(
-                            title = "Trending",
+                            title = stringResource(R.string.home_section_trending),
                             items = state.trending.map { MediaItem.MovieItem(it) },
                             onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
-                            title = "Popular Movies",
+                            title = stringResource(R.string.home_section_popular_movies),
                             items = state.popularMovies.map { MediaItem.MovieItem(it) },
                             onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
-                            title = "Popular TV",
+                            title = stringResource(R.string.home_section_popular_tv),
                             items = state.popularTv.map { MediaItem.TvItem(it) },
                             onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
-                            title = "Top Rated Movies",
+                            title = stringResource(R.string.home_section_top_rated_movies),
                             items = state.topRatedMovies.map { MediaItem.MovieItem(it) },
                             onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
-                            title = "Top Rated TV",
+                            title = stringResource(R.string.home_section_top_rated_tv),
                             items = state.topRatedTv.map { MediaItem.TvItem(it) },
                             onItemClick = onItemClick,
                         )

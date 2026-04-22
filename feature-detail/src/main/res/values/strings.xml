@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="detail_back">Back</string>
+    <string name="detail_remove_from_watchlist">Remove from watchlist</string>
+    <string name="detail_add_to_watchlist">Add to watchlist</string>
+    <string name="detail_backdrop_description">Backdrop for %s</string>
+    <string name="detail_rating">★ %1$.1f</string>
+    <string name="detail_section_cast">Cast</string>
+    <string name="detail_section_trailers">Trailers</string>
+    <string name="detail_section_similar">Similar</string>
+    <string name="detail_play">Play</string>
+</resources>

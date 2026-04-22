@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_placeholder">Search movies and TV shows…</string>
+    <string name="search_unknown_error">Unknown error</string>
+    <string name="search_no_results">No results for \"%s\"</string>
+    <string name="search_media_type_movie">Movie</string>
+    <string name="search_media_type_tv">TV</string>
+    <string name="search_item_description">%1$s (%2$s)</string>
+</resources>

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home_error_load_content">Failed to load some content</string>
+    <string name="home_title">SceneSeek</string>
+    <string name="home_section_trending">Trending</string>
+    <string name="home_section_popular_movies">Popular Movies</string>
+    <string name="home_section_popular_tv">Popular TV</string>
+    <string name="home_section_top_rated_movies">Top Rated Movies</string>
+    <string name="home_section_top_rated_tv">Top Rated TV</string>
 </resources>

@@ -31,12 +31,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.WatchlistItem
+import com.sceneseek.feature.watchlist.R
 import com.sceneseek.uicore.components.EmptyState
 import com.sceneseek.uicore.components.PosterImage
 import com.sceneseek.uicore.theme.SceneSeekTheme
@@ -75,11 +77,11 @@ internal fun WatchlistContent(
     onItemRemoved: (WatchlistItem) -> Unit = {},
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Watchlist") }) }
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.watchlist_title)) }) }
     ) { paddingValues ->
         when {
             state.isEmpty -> EmptyState(
-                message = "No saved titles yet",
+                message = stringResource(R.string.watchlist_empty_message),
                 icon = Icons.Default.Favorite,
                 modifier = Modifier
                     .padding(paddingValues)
@@ -133,7 +135,7 @@ private fun SwipeToDismissItem(
                     .padding(end = 16.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.White)
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.watchlist_remove), tint = Color.White)
             }
         },
         content = {
@@ -158,8 +160,8 @@ private fun WatchlistItemRow(item: WatchlistItem, onClick: () -> Unit) {
             Text(text = item.title, style = MaterialTheme.typography.bodyLarge)
             Text(
                 text = when (item.mediaType) {
-                    is MediaType.Movie -> "Movie"
-                    is MediaType.TvShow -> "TV Show"
+                    is MediaType.Movie -> stringResource(R.string.watchlist_media_type_movie)
+                    is MediaType.TvShow -> stringResource(R.string.watchlist_media_type_tv_show)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

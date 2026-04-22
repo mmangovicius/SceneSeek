@@ -18,7 +18,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sceneseek.uicore.R
 
 @Composable
 fun MediaCard(
@@ -28,10 +30,11 @@ fun MediaCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val cardDescription = stringResource(R.string.media_card_description, title, voteAverage)
     Card(modifier = modifier
         .semantics {
             role = Role.Button
-            contentDescription = "$title, rated ${"%.1f".format(voteAverage)}"
+            contentDescription = cardDescription
         }
         .clickable(onClick = onClick)) {
         Column {

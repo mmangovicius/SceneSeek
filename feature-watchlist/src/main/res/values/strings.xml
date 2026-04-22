@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="watchlist_title">Watchlist</string>
+    <string name="watchlist_empty_message">No saved titles yet</string>
+    <string name="watchlist_remove">Remove</string>
+    <string name="watchlist_media_type_movie">Movie</string>
+    <string name="watchlist_media_type_tv_show">TV Show</string>
+</resources>

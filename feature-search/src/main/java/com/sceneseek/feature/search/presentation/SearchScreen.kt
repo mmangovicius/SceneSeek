@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +31,7 @@ import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.domain.model.TvShow
+import com.sceneseek.feature.search.R
 import com.sceneseek.uicore.components.EmptyState
 import com.sceneseek.uicore.components.ErrorState
 import com.sceneseek.uicore.components.PosterImage
@@ -64,7 +66,7 @@ internal fun SearchContent(
             onSearch = {},
             active = false,
             onActiveChange = {},
-            placeholder = { Text("Search movies and TV shows…") },
+            placeholder = { Text(stringResource(R.string.search_placeholder)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -76,11 +78,11 @@ internal fun SearchContent(
             }
 
             state.error != null -> ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: stringResource(R.string.search_unknown_error),
                 onRetry = { onQueryChanged(state.query) },
             )
 
-            state.isEmpty -> EmptyState(message = "No results for \"${state.query}\"")
+            state.isEmpty -> EmptyState(message = stringResource(R.string.search_no_results, state.query))
             else -> LazyColumn {
                 items(state.items) { item ->
                     MediaListItem(item = item, onClick = {
@@ -104,15 +106,17 @@ internal fun SearchContent(
 
 @Composable
 private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
+    val movieLabel = stringResource(R.string.search_media_type_movie)
+    val tvLabel = stringResource(R.string.search_media_type_tv)
     val (id, title, posterPath, year, typeLabel) = when (item) {
         is MediaItem.MovieItem -> MediaListItemData(
             item.movie.id, item.movie.title, item.movie.posterPath,
-            item.movie.releaseDate.take(4), "Movie"
+            item.movie.releaseDate.take(4), movieLabel
         )
 
         is MediaItem.TvItem -> MediaListItemData(
             item.tvShow.id, item.tvShow.name, item.tvShow.posterPath,
-            item.tvShow.firstAirDate.take(4), "TV"
+            item.tvShow.firstAirDate.take(4), tvLabel
         )
     }
 
@@ -126,7 +130,7 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
         PosterImage(
             path = posterPath,
             modifier = Modifier.size(60.dp, 90.dp),
-            contentDescription = "$title ($typeLabel)"
+            contentDescription = stringResource(R.string.search_item_description, title, typeLabel)
         )
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {

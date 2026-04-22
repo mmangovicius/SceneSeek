@@ -42,8 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sceneseek.feature.detail.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -115,17 +117,17 @@ private fun DetailContent(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.detail_back))
                     }
                 },
                 actions = {
                     if (state.isWatchlisted) {
                         FilledIconButton(onClick = onWatchlistToggle) {
-                            Icon(Icons.Filled.Star, contentDescription = "Remove from watchlist")
+                            Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.detail_remove_from_watchlist))
                         }
                     } else {
                         OutlinedIconButton(onClick = onWatchlistToggle) {
-                            Icon(Icons.Outlined.Star, contentDescription = "Add to watchlist")
+                            Icon(Icons.Outlined.Star, contentDescription = stringResource(R.string.detail_add_to_watchlist))
                         }
                     }
                 }
@@ -143,7 +145,7 @@ private fun DetailContent(
             }
 
             state.error != null -> ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error,
                 onRetry = onRetry,
                 modifier = Modifier.padding(paddingValues),
             )
@@ -155,7 +157,7 @@ private fun DetailContent(
                 item {
                     AsyncImage(
                         model = TmdbImageUrlBuilder.buildUrl(backdropPath, ImageSize.W780),
-                        contentDescription = "Backdrop for $title",
+                        contentDescription = stringResource(R.string.detail_backdrop_description, title),
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(16f / 9f),
@@ -172,7 +174,7 @@ private fun DetailContent(
                         ) {
                             Text(text = year, style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = "★ ${"%.1f".format(voteAverage)}",
+                                text = stringResource(R.string.detail_rating, voteAverage),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -182,7 +184,7 @@ private fun DetailContent(
                 }
                 // Cast
                 if (state.cast.isNotEmpty()) {
-                    item { SectionHeader("Cast") }
+                    item { SectionHeader(stringResource(R.string.detail_section_cast)) }
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -196,7 +198,7 @@ private fun DetailContent(
                 }
                 // Trailers
                 if (state.trailers.isNotEmpty()) {
-                    item { SectionHeader("Trailers") }
+                    item { SectionHeader(stringResource(R.string.detail_section_trailers)) }
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -212,7 +214,7 @@ private fun DetailContent(
                 }
                 // Similar
                 if (state.similar.isNotEmpty()) {
-                    item { SectionHeader("Similar") }
+                    item { SectionHeader(stringResource(R.string.detail_section_similar)) }
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -285,7 +287,7 @@ private fun TrailerCard(trailer: Trailer, onClick: () -> Unit) {
             )
             Icon(
                 Icons.Default.PlayArrow,
-                contentDescription = "Play",
+                contentDescription = stringResource(R.string.detail_play),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(40.dp)
