@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
+import com.sceneseek.core.domain.model.PaginatedList
 import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.core.domain.util.Result
 import com.sceneseek.feature.home.domain.usecase.GetPopularMoviesUseCase
@@ -26,12 +27,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class HomeCategory {
+    TRENDING, POPULAR_MOVIES, POPULAR_TV, TOP_RATED_MOVIES, TOP_RATED_TV
+}
+
 data class HomeState(
-    val trending: List<Movie> = emptyList(),
-    val popularMovies: List<Movie> = emptyList(),
-    val popularTv: List<TvShow> = emptyList(),
-    val topRatedMovies: List<Movie> = emptyList(),
-    val topRatedTv: List<TvShow> = emptyList(),
+    val trending: PaginatedList<Movie> = PaginatedList(),
+    val popularMovies: PaginatedList<Movie> = PaginatedList(),
+    val popularTv: PaginatedList<TvShow> = PaginatedList(),
+    val topRatedMovies: PaginatedList<Movie> = PaginatedList(),
+    val topRatedTv: PaginatedList<TvShow> = PaginatedList(),
     val isLoading: Boolean = false,
     val hasError: Boolean = false,
 )
@@ -72,24 +77,97 @@ class HomeViewModel @Inject constructor(
                 getTopRatedTv(),
             ) { trending, popularMovies, popularTv, topRatedMovies, topRatedTv ->
                 val trendingData = if (trending is Result.Success) trending.data else emptyList()
-                val popularMoviesData = if (popularMovies is Result.Success) popularMovies.data else emptyList()
+                val popularMoviesData =
+                    if (popularMovies is Result.Success) popularMovies.data else emptyList()
                 val popularTvData = if (popularTv is Result.Success) popularTv.data else emptyList()
-                val topMoviesData = if (topRatedMovies is Result.Success) topRatedMovies.data else emptyList()
+                val topMoviesData =
+                    if (topRatedMovies is Result.Success) topRatedMovies.data else emptyList()
                 val topTvData = if (topRatedTv is Result.Success) topRatedTv.data else emptyList()
                 val results = listOf(trending, popularMovies, popularTv, topRatedMovies, topRatedTv)
                 val isStillLoading = results.any { it is Result.Loading }
                 val hasError = results.any { it is Result.Error }
                 HomeState(
-                    trending = trendingData,
-                    popularMovies = popularMoviesData,
-                    popularTv = popularTvData,
-                    topRatedMovies = topMoviesData,
-                    topRatedTv = topTvData,
+                    trending = PaginatedList(items = trendingData),
+                    popularMovies = PaginatedList(items = popularMoviesData),
+                    popularTv = PaginatedList(items = popularTvData),
+                    topRatedMovies = PaginatedList(items = topMoviesData),
+                    topRatedTv = PaginatedList(items = topTvData),
                     isLoading = isStillLoading,
                     hasError = hasError,
                 )
             }.collect { newState ->
-                _state.value = newState
+                _state.update { newState }
+            }
+        }
+    }
+
+    fun loadMore(category: HomeCategory) {
+        val state = _state.value
+        when (category) {
+            HomeCategory.TRENDING -> {
+                loadMoreItems(
+                    state.trending,
+                    { p -> getTrending(p) }
+                ) { state, pl -> state.copy(trending = pl) }
+            }
+
+            HomeCategory.POPULAR_MOVIES -> {
+                loadMoreItems(
+                    state.popularMovies,
+                    { p -> getPopularMovies(p) }
+                ) { state, pl -> state.copy(popularMovies = pl) }
+            }
+
+            HomeCategory.POPULAR_TV -> {
+                loadMoreItems(
+                    state.popularTv,
+                    { p -> getPopularTv(p) }
+                ) { state, pl -> state.copy(popularTv = pl) }
+            }
+
+            HomeCategory.TOP_RATED_MOVIES -> {
+                loadMoreItems(
+                    state.topRatedMovies,
+                    { p -> getTopRatedMovies(p) }
+                ) { state, pl -> state.copy(topRatedMovies = pl) }
+            }
+
+            HomeCategory.TOP_RATED_TV -> {
+                loadMoreItems(
+                    state.topRatedTv,
+                    { p -> getTopRatedTv(p) }
+                ) { state, pl -> state.copy(topRatedTv = pl) }
+            }
+        }
+    }
+
+    private fun <T> loadMoreItems(
+        current: PaginatedList<T>,
+        fetch: (Int) -> Flow<Result<List<T>>>,
+        copyState: (HomeState, PaginatedList<T>) -> HomeState,
+    ) {
+        if (!current.canLoadMore) return
+        val nextPage = current.page + 1
+        viewModelScope.launch {
+            fetch(nextPage).collect { result ->
+                when (result) {
+                    is Result.Success -> _state.update {
+                        copyState(
+                            it,
+                            PaginatedList(
+                                current.items + result.data,
+                                nextPage,
+                                result.data.isNotEmpty()
+                            )
+                        )
+                    }
+
+                    is Result.Error -> _state.update {
+                        copyState(it, current.copy(canLoadMore = false))
+                    }
+
+                    else -> Unit
+                }
             }
         }
     }
@@ -97,8 +175,23 @@ class HomeViewModel @Inject constructor(
     fun onItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE))
-                is MediaItem.TvItem -> _navEvents.send(HomeNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV))
+                is MediaItem.MovieItem -> {
+                    _navEvents.send(
+                        HomeNavEvent.NavigateToDetail(
+                            item.movie.id,
+                            MediaType.KEY_MOVIE
+                        )
+                    )
+                }
+
+                is MediaItem.TvItem -> {
+                    _navEvents.send(
+                        HomeNavEvent.NavigateToDetail(
+                            item.tvShow.id,
+                            MediaType.KEY_TV
+                        )
+                    )
+                }
             }
         }
     }

@@ -17,7 +17,10 @@ interface TmdbMovieService {
     suspend fun getTopRated(@Query("page") page: Int = 1): Response<PagedResponse<MovieDto>>
 
     @GET("trending/movie/{time_window}")
-    suspend fun getTrending(@Path("time_window") timeWindow: String = "day"): Response<PagedResponse<MovieDto>>
+    suspend fun getTrending(
+        @Path("time_window") timeWindow: String = "day",
+        @Query("page") page: Int = 1,
+    ): Response<PagedResponse<MovieDto>>
 
     @GET("movie/{movie_id}")
     suspend fun getMovieDetail(@Path("movie_id") id: Int): Response<MovieDto>

@@ -32,16 +32,17 @@ class RemoteTvRepository @Inject constructor(
 ) : TvRepository {
 
     override fun getPopularTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.POPULAR) { tvService.getPopular(page) }
+        fetchTvShows(CacheCategory.POPULAR, page) { tvService.getPopular(page) }
 
     override fun getTrendingTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.TRENDING) { tvService.getTrending() }
+        fetchTvShows(CacheCategory.TRENDING, page) { tvService.getTrending(page = page) }
 
     override fun getTopRatedTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.TOP_RATED) { tvService.getTopRated(page) }
+        fetchTvShows(CacheCategory.TOP_RATED, page) { tvService.getTopRated(page) }
 
     private fun fetchTvShows(
         category: String,
+        page: Int = 1,
         apiCall: suspend () -> Response<PagedResponse<TvShowDto>>,
     ): Flow<Result<List<TvShow>>> = safeFlow {
         emit(Result.Loading)
@@ -50,17 +51,19 @@ class RemoteTvRepository @Inject constructor(
             when (result) {
                 is Result.Success -> {
                     val dtos = result.data.results
-                    withContext(dispatchers.io) {
-                        tvShowDao.replaceByCategory(category, dtos.map { it.toEntity(category) })
+                    if (page == 1) {
+                        withContext(dispatchers.io) {
+                            tvShowDao.replaceByCategory(category, dtos.map { it.toEntity(category) })
+                        }
                     }
                     emit(Result.Success(dtos.map { it.toDomain() }))
                 }
 
-                is Result.Error -> emitCachedOrError(category, result.throwable)
+                is Result.Error -> if (page == 1) emitCachedOrError(category, result.throwable) else emit(Result.Error(result.throwable))
                 else -> {}
             }
         } catch (e: Exception) {
-            emitCachedOrError(category, e)
+            if (page == 1) emitCachedOrError(category, e) else emit(Result.Error(e))
         }
     }
 

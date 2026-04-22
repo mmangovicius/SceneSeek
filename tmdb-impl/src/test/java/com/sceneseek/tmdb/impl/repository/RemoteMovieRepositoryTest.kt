@@ -107,4 +107,31 @@ internal class RemoteMovieRepositoryTest {
             }
         }
     }
+
+    @Nested
+    inner class WhenPaginating {
+
+        @Test
+        fun `GIVEN page 2 WHEN getPopularMovies THEN does not cache in Room`() = runTest {
+            coEvery { movieService.getPopular(2) } returns
+                Response.success(PagedResponse(2, listOf(MOVIE_DTO), 1, 2))
+
+            repository.getPopularMovies(page = 2).test { cancelAndIgnoreRemainingEvents() }
+
+            coVerify(exactly = 0) { movieDao.replaceByCategory(any(), any()) }
+        }
+
+        @Test
+        fun `GIVEN page 2 and network failure WHEN getPopularMovies THEN emits Error without cache fallback`() = runTest {
+            coEvery { movieService.getPopular(2) } throws java.io.IOException("No network")
+
+            repository.getPopularMovies(page = 2).test {
+                assertTrue(awaitItem() is Result.Loading)
+                assertTrue(awaitItem() is Result.Error)
+                awaitComplete()
+            }
+
+            coVerify(exactly = 0) { movieDao.getByCategory(any()) }
+        }
+    }
 }

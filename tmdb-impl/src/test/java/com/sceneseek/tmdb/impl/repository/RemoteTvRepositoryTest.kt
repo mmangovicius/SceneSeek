@@ -80,4 +80,31 @@ internal class RemoteTvRepositoryTest {
             }
         }
     }
+
+    @Nested
+    inner class WhenPaginating {
+
+        @Test
+        fun `GIVEN page 2 WHEN getPopularTv THEN does not cache in Room`() = runTest {
+            coEvery { tvService.getPopular(2) } returns
+                Response.success(PagedResponse(2, listOf(TV_DTO), 1, 2))
+
+            repository.getPopularTv(page = 2).test { cancelAndIgnoreRemainingEvents() }
+
+            coVerify(exactly = 0) { tvShowDao.replaceByCategory(any(), any()) }
+        }
+
+        @Test
+        fun `GIVEN page 2 and network failure WHEN getPopularTv THEN emits Error without cache fallback`() = runTest {
+            coEvery { tvService.getPopular(2) } throws java.io.IOException("No network")
+
+            repository.getPopularTv(page = 2).test {
+                assertTrue(awaitItem() is Result.Loading)
+                assertTrue(awaitItem() is Result.Error)
+                awaitComplete()
+            }
+
+            coVerify(exactly = 0) { tvShowDao.getByCategory(any()) }
+        }
+    }
 }

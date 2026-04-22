@@ -17,7 +17,10 @@ interface TmdbTvService {
     suspend fun getTopRated(@Query("page") page: Int = 1): Response<PagedResponse<TvShowDto>>
 
     @GET("trending/tv/{time_window}")
-    suspend fun getTrending(@Path("time_window") timeWindow: String = "day"): Response<PagedResponse<TvShowDto>>
+    suspend fun getTrending(
+        @Path("time_window") timeWindow: String = "day",
+        @Query("page") page: Int = 1,
+    ): Response<PagedResponse<TvShowDto>>
 
     @GET("tv/{series_id}")
     suspend fun getTvDetail(@Path("series_id") id: Int): Response<TvShowDto>

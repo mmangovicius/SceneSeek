@@ -14,6 +14,7 @@ import com.sceneseek.testutils.UnconfinedTestDispatcherExtension
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -59,11 +60,11 @@ internal class HomeViewModelTest {
                 val state = awaitItem()
                 assertFalse(state.isLoading)
                 assertFalse(state.hasError)
-                assertEquals(1, state.trending.size)
-                assertEquals(1, state.popularMovies.size)
-                assertEquals(1, state.popularTv.size)
-                assertEquals(2, state.topRatedMovies.size)
-                assertEquals(1, state.topRatedTv.size)
+                assertEquals(1, state.trending.items.size)
+                assertEquals(1, state.popularMovies.items.size)
+                assertEquals(1, state.popularTv.items.size)
+                assertEquals(2, state.topRatedMovies.items.size)
+                assertEquals(1, state.topRatedTv.items.size)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -78,7 +79,7 @@ internal class HomeViewModelTest {
 
             vm.state.test {
                 val state = awaitItem()
-                assertEquals(newMovie, state.trending.first())
+                assertEquals(newMovie, state.trending.items.first())
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -124,6 +125,67 @@ internal class HomeViewModelTest {
                 assertEquals("tv", event.mediaType)
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+    }
+
+    @Nested
+    inner class Pagination {
+
+        private val PAGE_2_MOVIE = Movie(99, "Page 2 Movie", null, null, "", 6.0, "2024-03-01")
+
+        @Test
+        fun `GIVEN page 1 loaded WHEN loadMore trending THEN appends new data to existing list`() = runTest {
+            every { getTrending(2) } returns flowOf(Result.Success(listOf(PAGE_2_MOVIE)))
+            val vm = createViewModel()
+
+            vm.loadMore(HomeCategory.TRENDING)
+
+            vm.state.test {
+                val state = awaitItem()
+                assertEquals(2, state.trending.items.size)
+                assertEquals(MOVIE, state.trending.items[0])
+                assertEquals(PAGE_2_MOVIE, state.trending.items[1])
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun `GIVEN page 1 loaded WHEN loadMore trending THEN page increments to 2`() = runTest {
+            every { getTrending(2) } returns flowOf(Result.Success(listOf(PAGE_2_MOVIE)))
+            val vm = createViewModel()
+
+            vm.loadMore(HomeCategory.TRENDING)
+
+            vm.state.test {
+                val state = awaitItem()
+                assertEquals(2, state.trending.page)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun `GIVEN empty result from page 2 WHEN loadMore trending THEN canLoadMore becomes false`() = runTest {
+            every { getTrending(2) } returns flowOf(Result.Success(emptyList()))
+            val vm = createViewModel()
+
+            vm.loadMore(HomeCategory.TRENDING)
+
+            vm.state.test {
+                val state = awaitItem()
+                assertFalse(state.trending.canLoadMore)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun `GIVEN canLoadMore is false WHEN loadMore trending THEN state unchanged`() = runTest {
+            every { getTrending(2) } returns flowOf(Result.Success(emptyList()))
+            val vm = createViewModel()
+            vm.loadMore(HomeCategory.TRENDING)
+
+            vm.loadMore(HomeCategory.TRENDING)
+
+            verify(exactly = 0) { getTrending(3) }
         }
     }
 }

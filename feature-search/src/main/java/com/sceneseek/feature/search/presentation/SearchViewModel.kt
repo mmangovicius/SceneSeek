@@ -3,6 +3,7 @@ package com.sceneseek.feature.search.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.PaginatedList
 import com.sceneseek.core.domain.repository.SearchRepository
 import com.sceneseek.core.domain.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,14 +18,16 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SearchState(
     val query: String = "",
-    val items: List<MediaItem> = emptyList(),
+    val results: PaginatedList<MediaItem> = PaginatedList(),
     val isLoading: Boolean = false,
     val isEmpty: Boolean = false,
     val error: String? = null,
+    val isLoadingMore: Boolean = false,
 )
 
 @HiltViewModel
@@ -52,7 +55,7 @@ class SearchViewModel @Inject constructor(
                     is Result.Loading -> _state.update { it.copy(isLoading = true, error = null) }
                     is Result.Success -> _state.update { it.copy(
                         isLoading = false,
-                        items = result.data,
+                        results = PaginatedList(result.data),
                         isEmpty = result.data.isEmpty(),
                         error = null,
                     )}
@@ -73,5 +76,28 @@ class SearchViewModel @Inject constructor(
     fun onQueryCleared() {
         _state.update { SearchState() }
         queryFlow.value = ""
+    }
+
+    fun loadMore() {
+        val state = _state.value
+        if (state.isLoadingMore || !state.results.canLoadMore || state.query.length <= 1) return
+        val nextPage = state.results.page + 1
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingMore = true) }
+            searchRepository.search(state.query, nextPage).collect { result ->
+                when (result) {
+                    is Result.Success -> _state.update {
+                        it.copy(
+                            results = PaginatedList(it.results.items + result.data, nextPage, result.data.isNotEmpty()),
+                            isLoadingMore = false,
+                        )
+                    }
+                    is Result.Error -> _state.update {
+                        it.copy(results = it.results.copy(canLoadMore = false), isLoadingMore = false)
+                    }
+                    else -> {}
+                }
+            }
+        }
     }
 }

@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.PaginatedList
 import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.domain.model.TvShow
@@ -49,6 +53,7 @@ fun SearchScreen(
         state = state,
         onQueryChanged = viewModel::onQueryChanged,
         onNavigateToDetail = onNavigateToDetail,
+        onLoadMore = viewModel::loadMore,
     )
 }
 
@@ -58,6 +63,7 @@ internal fun SearchContent(
     state: SearchState,
     onQueryChanged: (String) -> Unit = {},
     onNavigateToDetail: (Int, String) -> Unit = { _, _ -> },
+    onLoadMore: () -> Unit = {},
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -83,21 +89,48 @@ internal fun SearchContent(
             )
 
             state.isEmpty -> EmptyState(message = stringResource(R.string.search_no_results, state.query))
-            else -> LazyColumn {
-                items(state.items) { item ->
-                    MediaListItem(item = item, onClick = {
-                        when (item) {
-                            is MediaItem.MovieItem -> onNavigateToDetail(
-                                item.movie.id,
-                                MediaType.KEY_MOVIE
-                            )
-
-                            is MediaItem.TvItem -> onNavigateToDetail(
-                                item.tvShow.id,
-                                MediaType.KEY_TV
-                            )
+            else -> {
+                val listState = rememberLazyListState()
+                LaunchedEffect(listState) {
+                    snapshotFlow {
+                        val layoutInfo = listState.layoutInfo
+                        val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                        val totalItems = layoutInfo.totalItemsCount
+                        lastVisible to totalItems
+                    }.collect { (lastVisible, totalItems) ->
+                        if (totalItems > 0 && lastVisible >= totalItems - PREFETCH_DISTANCE) {
+                            onLoadMore()
                         }
-                    })
+                    }
+                }
+                LazyColumn(state = listState) {
+                    items(state.results.items) { item ->
+                        MediaListItem(item = item, onClick = {
+                            when (item) {
+                                is MediaItem.MovieItem -> onNavigateToDetail(
+                                    item.movie.id,
+                                    MediaType.KEY_MOVIE
+                                )
+
+                                is MediaItem.TvItem -> onNavigateToDetail(
+                                    item.tvShow.id,
+                                    MediaType.KEY_TV
+                                )
+                            }
+                        })
+                    }
+                    if (state.isLoadingMore) {
+                        item {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -144,6 +177,8 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
     }
 }
 
+private const val PREFETCH_DISTANCE = 3
+
 private data class MediaListItemData(
     val id: Int, val title: String, val posterPath: String?,
     val year: String, val typeLabel: String,
@@ -178,7 +213,7 @@ private fun SearchScreenPreview() {
     )
     SceneSeekTheme {
         SearchContent(
-            state = SearchState(query = "matrix", items = sampleItems),
+            state = SearchState(query = "matrix", results = PaginatedList(sampleItems)),
         )
     }
 }
