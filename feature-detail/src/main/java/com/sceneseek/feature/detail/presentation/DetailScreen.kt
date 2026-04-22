@@ -27,7 +27,9 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -90,11 +92,14 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::onWatchlistToggled) {
-                        Icon(
-                            if (state.isWatchlisted) Icons.Filled.Star else Icons.Outlined.Star,
-                            contentDescription = if (state.isWatchlisted) "Remove from watchlist" else "Add to watchlist",
-                        )
+                    if (state.isWatchlisted) {
+                        FilledIconButton(onClick = viewModel::onWatchlistToggled) {
+                            Icon(Icons.Filled.Star, contentDescription = "Remove from watchlist")
+                        }
+                    } else {
+                        OutlinedIconButton(onClick = viewModel::onWatchlistToggled) {
+                            Icon(Icons.Outlined.Star, contentDescription = "Add to watchlist")
+                        }
                     }
                 }
             )
