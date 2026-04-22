@@ -5,6 +5,7 @@ package com.sceneseek.feature.search.presentation
 import app.cash.turbine.test
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.Movie
+import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.core.domain.repository.SearchRepository
 import com.sceneseek.core.domain.util.Result
 import com.sceneseek.testutils.UnconfinedTestDispatcherExtension
@@ -179,6 +180,32 @@ internal class SearchViewModelTest {
                 val state = awaitItem()
                 assertEquals(1, state.results.page)
                 assertTrue(state.results.canLoadMore)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+
+    @Nested
+    inner class OnUserInteraction {
+
+        @Test
+        fun `GIVEN movie item WHEN onItemClicked THEN emits NavigateToDetail with movie type`() = runTest {
+            viewModel.navEvents.test {
+                viewModel.onItemClicked(MediaItem.MovieItem(Movie(1, "Movie", null, null, "", 8.0, "")))
+                val event = awaitItem() as SearchNavEvent.NavigateToDetail
+                assertEquals(1, event.mediaId)
+                assertEquals("movie", event.mediaType)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun `GIVEN tv item WHEN onItemClicked THEN emits NavigateToDetail with tv type`() = runTest {
+            viewModel.navEvents.test {
+                viewModel.onItemClicked(MediaItem.TvItem(TvShow(10, "Show", null, null, "", 7.5, "")))
+                val event = awaitItem() as SearchNavEvent.NavigateToDetail
+                assertEquals(10, event.mediaId)
+                assertEquals("tv", event.mediaType)
                 cancelAndIgnoreRemainingEvents()
             }
         }

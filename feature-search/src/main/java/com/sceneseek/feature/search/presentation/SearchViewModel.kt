@@ -3,15 +3,19 @@ package com.sceneseek.feature.search.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sceneseek.core.domain.model.MediaItem
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.PaginatedList
 import com.sceneseek.core.domain.repository.SearchRepository
 import com.sceneseek.core.domain.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
@@ -30,6 +34,10 @@ data class SearchState(
     val isLoadingMore: Boolean = false,
 )
 
+sealed class SearchNavEvent {
+    data class NavigateToDetail(val mediaId: Int, val mediaType: String) : SearchNavEvent()
+}
+
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
@@ -37,6 +45,9 @@ class SearchViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
+
+    private val _navEvents = Channel<SearchNavEvent>(Channel.BUFFERED)
+    val navEvents: Flow<SearchNavEvent> = _navEvents.receiveAsFlow()
 
     private val queryFlow = MutableStateFlow("")
 
@@ -76,6 +87,19 @@ class SearchViewModel @Inject constructor(
     fun onQueryCleared() {
         _state.update { SearchState() }
         queryFlow.value = ""
+    }
+
+    fun onItemClicked(item: MediaItem) {
+        viewModelScope.launch {
+            when (item) {
+                is MediaItem.MovieItem -> _navEvents.send(
+                    SearchNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE)
+                )
+                is MediaItem.TvItem -> _navEvents.send(
+                    SearchNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV)
+                )
+            }
+        }
     }
 
     fun loadMore() {

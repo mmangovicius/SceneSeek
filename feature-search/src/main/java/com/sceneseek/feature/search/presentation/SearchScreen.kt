@@ -32,7 +32,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.PaginatedList
-import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.feature.search.R
@@ -49,10 +48,18 @@ fun SearchScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.navEvents.collect { event ->
+            when (event) {
+                is SearchNavEvent.NavigateToDetail -> onNavigateToDetail(event.mediaId, event.mediaType)
+            }
+        }
+    }
+
     SearchContent(
         state = state,
         onQueryChanged = viewModel::onQueryChanged,
-        onNavigateToDetail = onNavigateToDetail,
+        onItemClick = viewModel::onItemClicked,
         onLoadMore = viewModel::loadMore,
     )
 }
@@ -62,7 +69,7 @@ fun SearchScreen(
 internal fun SearchContent(
     state: SearchState,
     onQueryChanged: (String) -> Unit = {},
-    onNavigateToDetail: (Int, String) -> Unit = { _, _ -> },
+    onItemClick: (MediaItem) -> Unit = {},
     onLoadMore: () -> Unit = {},
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -105,19 +112,7 @@ internal fun SearchContent(
                 }
                 LazyColumn(state = listState) {
                     items(state.results.items) { item ->
-                        MediaListItem(item = item, onClick = {
-                            when (item) {
-                                is MediaItem.MovieItem -> onNavigateToDetail(
-                                    item.movie.id,
-                                    MediaType.KEY_MOVIE
-                                )
-
-                                is MediaItem.TvItem -> onNavigateToDetail(
-                                    item.tvShow.id,
-                                    MediaType.KEY_TV
-                                )
-                            }
-                        })
+                        MediaListItem(item = item, onClick = { onItemClick(item) })
                     }
                     if (state.isLoadingMore) {
                         item {
