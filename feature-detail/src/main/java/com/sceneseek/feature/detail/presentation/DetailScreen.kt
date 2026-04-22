@@ -42,17 +42,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.sceneseek.core.domain.model.Cast
+import com.sceneseek.core.domain.model.Movie
 import com.sceneseek.core.util.ImageSize
 import com.sceneseek.core.util.TmdbImageUrlBuilder
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.Trailer
 import com.sceneseek.uicore.components.ErrorState
 import com.sceneseek.uicore.components.MediaCard
+import com.sceneseek.uicore.theme.SceneSeekTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,11 +74,35 @@ fun DetailScreen(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
                     context.startActivity(intent)
                 }
-                is DetailNavEvent.NavigateToDetail -> onNavigateToDetail(event.mediaId, event.mediaType)
+
+                is DetailNavEvent.NavigateToDetail -> onNavigateToDetail(
+                    event.mediaId,
+                    event.mediaType
+                )
             }
         }
     }
 
+    DetailContent(
+        state = state,
+        onNavigateBack = onNavigateBack,
+        onWatchlistToggle = viewModel::onWatchlistToggled,
+        onTrailerClick = viewModel::onTrailerClicked,
+        onSimilarClick = viewModel::onSimilarItemClicked,
+        onRetry = viewModel::onRetry,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DetailContent(
+    state: DetailState,
+    onNavigateBack: () -> Unit = {},
+    onWatchlistToggle: () -> Unit = {},
+    onTrailerClick: (Trailer) -> Unit = {},
+    onSimilarClick: (MediaItem) -> Unit = {},
+    onRetry: () -> Unit = {},
+) {
     val title = state.movie?.title ?: state.tvShow?.name ?: ""
     val backdropPath = state.movie?.backdropPath ?: state.tvShow?.backdropPath
     val overview = state.movie?.overview ?: state.tvShow?.overview ?: ""
@@ -93,11 +120,11 @@ fun DetailScreen(
                 },
                 actions = {
                     if (state.isWatchlisted) {
-                        FilledIconButton(onClick = viewModel::onWatchlistToggled) {
+                        FilledIconButton(onClick = onWatchlistToggle) {
                             Icon(Icons.Filled.Star, contentDescription = "Remove from watchlist")
                         }
                     } else {
-                        OutlinedIconButton(onClick = viewModel::onWatchlistToggled) {
+                        OutlinedIconButton(onClick = onWatchlistToggle) {
                             Icon(Icons.Outlined.Star, contentDescription = "Add to watchlist")
                         }
                     }
@@ -106,21 +133,32 @@ fun DetailScreen(
         }
     ) { paddingValues ->
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            state.isLoading -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
                 androidx.compose.material3.CircularProgressIndicator()
             }
+
             state.error != null -> ErrorState(
                 message = state.error ?: "Unknown error",
-                onRetry = viewModel::onRetry,
+                onRetry = onRetry,
                 modifier = Modifier.padding(paddingValues),
             )
-            else -> LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+
+            else -> LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)) {
                 // Backdrop
                 item {
                     AsyncImage(
                         model = TmdbImageUrlBuilder.buildUrl(backdropPath, ImageSize.W780),
                         contentDescription = "Backdrop for $title",
-                        modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16f / 9f),
                         contentScale = ContentScale.Crop,
                     )
                 }
@@ -128,9 +166,15 @@ fun DetailScreen(
                 item {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = title, style = MaterialTheme.typography.headlineMedium)
-                        Row(modifier = Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             Text(text = year, style = MaterialTheme.typography.bodyMedium)
-                            Text(text = "★ ${"%.1f".format(voteAverage)}", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = "★ ${"%.1f".format(voteAverage)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                         Spacer(Modifier.height(8.dp))
                         Text(text = overview, style = MaterialTheme.typography.bodyMedium)
@@ -140,7 +184,10 @@ fun DetailScreen(
                 if (state.cast.isNotEmpty()) {
                     item { SectionHeader("Cast") }
                     item {
-                        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                             items(state.cast) { cast ->
                                 CastItem(cast = cast)
                             }
@@ -151,9 +198,14 @@ fun DetailScreen(
                 if (state.trailers.isNotEmpty()) {
                     item { SectionHeader("Trailers") }
                     item {
-                        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             items(state.trailers) { trailer ->
-                                TrailerCard(trailer = trailer, onClick = { viewModel.onTrailerClicked(trailer) })
+                                TrailerCard(
+                                    trailer = trailer,
+                                    onClick = { onTrailerClick(trailer) })
                             }
                         }
                     }
@@ -162,14 +214,31 @@ fun DetailScreen(
                 if (state.similar.isNotEmpty()) {
                     item { SectionHeader("Similar") }
                     item {
-                        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             items(state.similar) { item ->
                                 val (posterPath2, simTitle, rating2) = when (item) {
-                                    is MediaItem.MovieItem -> Triple(item.movie.posterPath, item.movie.title, item.movie.voteAverage)
-                                    is MediaItem.TvItem -> Triple(item.tvShow.posterPath, item.tvShow.name, item.tvShow.voteAverage)
+                                    is MediaItem.MovieItem -> Triple(
+                                        item.movie.posterPath,
+                                        item.movie.title,
+                                        item.movie.voteAverage
+                                    )
+
+                                    is MediaItem.TvItem -> Triple(
+                                        item.tvShow.posterPath,
+                                        item.tvShow.name,
+                                        item.tvShow.voteAverage
+                                    )
                                 }
-                                MediaCard(posterPath = posterPath2, title = simTitle, voteAverage = rating2,
-                                    onClick = { viewModel.onSimilarItemClicked(item) }, modifier = Modifier.width(120.dp))
+                                MediaCard(
+                                    posterPath = posterPath2,
+                                    title = simTitle,
+                                    voteAverage = rating2,
+                                    onClick = { onSimilarClick(item) },
+                                    modifier = Modifier.width(120.dp)
+                                )
                             }
                         }
                     }
@@ -181,16 +250,22 @@ fun DetailScreen(
 
 @Composable
 private fun SectionHeader(title: String) {
-    Text(text = title, style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+    Text(
+        text = title, style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
 }
 
 @Composable
 private fun CastItem(cast: Cast) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(72.dp)) {
-        AsyncImage(model = TmdbImageUrlBuilder.buildUrl(cast.profilePath, ImageSize.W185),
+        AsyncImage(
+            model = TmdbImageUrlBuilder.buildUrl(cast.profilePath, ImageSize.W185),
             contentDescription = cast.name,
-            modifier = Modifier.size(48.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape), contentScale = ContentScale.Crop
+        )
         Text(text = cast.name, style = MaterialTheme.typography.labelSmall, maxLines = 2)
         Text(text = cast.character, style = MaterialTheme.typography.labelSmall, maxLines = 1)
     }
@@ -200,11 +275,55 @@ private fun CastItem(cast: Cast) {
 private fun TrailerCard(trailer: Trailer, onClick: () -> Unit) {
     Card(onClick = onClick, modifier = Modifier.width(160.dp)) {
         Box {
-            AsyncImage(model = "https://img.youtube.com/vi/${trailer.key}/mqdefault.jpg",
-                contentDescription = trailer.name, modifier = Modifier.fillMaxWidth().aspectRatio(16f/9f),
-                contentScale = ContentScale.Crop)
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", modifier = Modifier.align(Alignment.Center).size(40.dp))
+            AsyncImage(
+                model = "https://img.youtube.com/vi/${trailer.key}/mqdefault.jpg",
+                contentDescription = trailer.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f),
+                contentScale = ContentScale.Crop
+            )
+            Icon(
+                Icons.Default.PlayArrow,
+                contentDescription = "Play",
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(40.dp)
+            )
         }
-        Text(text = trailer.name, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp), maxLines = 2)
+        Text(
+            text = trailer.name,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(8.dp),
+            maxLines = 2
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DetailScreenPreview() {
+    SceneSeekTheme {
+        DetailContent(
+            state = DetailState(
+                movie = Movie(
+                    id = 1,
+                    title = "The Matrix",
+                    posterPath = null,
+                    backdropPath = null,
+                    overview = "A computer hacker learns about the true nature of reality.",
+                    voteAverage = 8.7, releaseDate = "1999-03-31",
+                ),
+                cast = listOf(
+                    Cast(1, "Keanu Reeves", "Neo", null),
+                    Cast(2, "Laurence Fishburne", "Morpheus", null),
+                ),
+                trailers = listOf(
+                    Trailer("abc", "Official Trailer", "YouTube", "Trailer"),
+                ),
+                isLoading = false,
+                isWatchlisted = true,
+            ),
+        )
     }
 }

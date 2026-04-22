@@ -22,14 +22,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.MediaType
+import com.sceneseek.core.domain.model.Movie
+import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.uicore.components.EmptyState
 import com.sceneseek.uicore.components.ErrorState
 import com.sceneseek.uicore.components.PosterImage
+import com.sceneseek.uicore.theme.SceneSeekTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,10 +43,24 @@ fun SearchScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    SearchContent(
+        state = state,
+        onQueryChanged = viewModel::onQueryChanged,
+        onNavigateToDetail = onNavigateToDetail,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SearchContent(
+    state: SearchState,
+    onQueryChanged: (String) -> Unit = {},
+    onNavigateToDetail: (Int, String) -> Unit = { _, _ -> },
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = state.query,
-            onQueryChange = viewModel::onQueryChanged,
+            onQueryChange = onQueryChanged,
             onSearch = {},
             active = false,
             onActiveChange = {},
@@ -56,17 +74,26 @@ fun SearchScreen(
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
+
             state.error != null -> ErrorState(
                 message = state.error ?: "Unknown error",
-                onRetry = { viewModel.onQueryChanged(state.query) },
+                onRetry = { onQueryChanged(state.query) },
             )
+
             state.isEmpty -> EmptyState(message = "No results for \"${state.query}\"")
             else -> LazyColumn {
                 items(state.items) { item ->
                     MediaListItem(item = item, onClick = {
                         when (item) {
-                            is MediaItem.MovieItem -> onNavigateToDetail(item.movie.id, MediaType.KEY_MOVIE)
-                            is MediaItem.TvItem -> onNavigateToDetail(item.tvShow.id, MediaType.KEY_TV)
+                            is MediaItem.MovieItem -> onNavigateToDetail(
+                                item.movie.id,
+                                MediaType.KEY_MOVIE
+                            )
+
+                            is MediaItem.TvItem -> onNavigateToDetail(
+                                item.tvShow.id,
+                                MediaType.KEY_TV
+                            )
                         }
                     })
                 }
@@ -82,6 +109,7 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
             item.movie.id, item.movie.title, item.movie.posterPath,
             item.movie.releaseDate.take(4), "Movie"
         )
+
         is MediaItem.TvItem -> MediaListItemData(
             item.tvShow.id, item.tvShow.name, item.tvShow.posterPath,
             item.tvShow.firstAirDate.take(4), "TV"
@@ -95,7 +123,11 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PosterImage(path = posterPath, modifier = Modifier.size(60.dp, 90.dp), contentDescription = "$title ($typeLabel)")
+        PosterImage(
+            path = posterPath,
+            modifier = Modifier.size(60.dp, 90.dp),
+            contentDescription = "$title ($typeLabel)"
+        )
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, style = MaterialTheme.typography.bodyLarge)
@@ -112,3 +144,37 @@ private data class MediaListItemData(
     val id: Int, val title: String, val posterPath: String?,
     val year: String, val typeLabel: String,
 )
+
+@Preview(showBackground = true)
+@Composable
+private fun SearchScreenPreview() {
+    val sampleItems = listOf(
+        MediaItem.MovieItem(
+            Movie(
+                id = 1,
+                title = "The Matrix",
+                posterPath = null,
+                backdropPath = null,
+                overview = "",
+                voteAverage = 8.7,
+                releaseDate = "1999-03-31"
+            )
+        ),
+        MediaItem.TvItem(
+            TvShow(
+                id = 2,
+                name = "Breaking Bad",
+                posterPath = null,
+                backdropPath = null,
+                overview = "",
+                voteAverage = 9.5,
+                firstAirDate = "2008-01-20"
+            )
+        ),
+    )
+    SceneSeekTheme {
+        SearchContent(
+            state = SearchState(query = "matrix", items = sampleItems),
+        )
+    }
+}

@@ -30,8 +30,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sceneseek.core.domain.model.MediaItem
 import com.sceneseek.core.domain.model.MediaType
+import com.sceneseek.core.domain.model.Movie
+import com.sceneseek.core.domain.model.TvShow
 import com.sceneseek.uicore.components.MediaCard
 import com.sceneseek.uicore.components.ShimmerEffect
+import com.sceneseek.uicore.theme.SceneSeekTheme
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,13 +62,29 @@ fun HomeScreen(
         }
     }
 
+    HomeContent(
+        state = state,
+        snackbarHostState = snackbarHostState,
+        onItemClick = viewModel::onItemClicked,
+        onRetry = viewModel::onRetry,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeContent(
+    state: HomeState,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    onItemClick: (MediaItem) -> Unit = {},
+    onRetry: () -> Unit = {},
+) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("SceneSeek") }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = state.isLoading,
-            onRefresh = viewModel::onRetry,
+            onRefresh = onRetry,
             modifier = Modifier.padding(paddingValues),
         ) {
             if (state.isLoading && state.trending.isEmpty()) {
@@ -75,35 +95,35 @@ fun HomeScreen(
                         ContentRow(
                             title = "Trending",
                             items = state.trending.map { MediaItem.MovieItem(it) },
-                            onItemClick = viewModel::onItemClicked,
+                            onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
                             title = "Popular Movies",
                             items = state.popularMovies.map { MediaItem.MovieItem(it) },
-                            onItemClick = viewModel::onItemClicked,
+                            onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
                             title = "Popular TV",
                             items = state.popularTv.map { MediaItem.TvItem(it) },
-                            onItemClick = viewModel::onItemClicked,
+                            onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
                             title = "Top Rated Movies",
                             items = state.topRatedMovies.map { MediaItem.MovieItem(it) },
-                            onItemClick = viewModel::onItemClicked,
+                            onItemClick = onItemClick,
                         )
                     }
                     item {
                         ContentRow(
                             title = "Top Rated TV",
                             items = state.topRatedTv.map { MediaItem.TvItem(it) },
-                            onItemClick = viewModel::onItemClicked,
+                            onItemClick = onItemClick,
                         )
                     }
                 }
@@ -163,8 +183,13 @@ private fun ShimmerHomeContent() {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(3) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                ShimmerEffect(modifier = Modifier.padding(16.dp).fillMaxWidth(0.4f))
-                LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ShimmerEffect(modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(0.4f))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     items(4) { ShimmerEffect(modifier = Modifier.width(120.dp)) }
                 }
             }
@@ -172,4 +197,44 @@ private fun ShimmerHomeContent() {
     }
 }
 
-private data class MediaCardData(val id: Int, val posterPath: String?, val title: String, val voteAverage: Double, val mediaType: String)
+private data class MediaCardData(
+    val id: Int,
+    val posterPath: String?,
+    val title: String,
+    val voteAverage: Double,
+    val mediaType: String
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenPreview() {
+    val sampleMovie = Movie(
+        id = 1,
+        title = "The Matrix",
+        posterPath = null,
+        backdropPath = null,
+        overview = "",
+        voteAverage = 8.7,
+        releaseDate = "1999-03-31",
+    )
+    val sampleTv = TvShow(
+        id = 1,
+        name = "Breaking Bad",
+        posterPath = null,
+        backdropPath = null,
+        overview = "",
+        voteAverage = 9.5,
+        firstAirDate = "2008-01-20",
+    )
+    SceneSeekTheme {
+        HomeContent(
+            state = HomeState(
+                trending = listOf(sampleMovie, sampleMovie.copy(id = 2, title = "Inception")),
+                popularMovies = listOf(sampleMovie.copy(id = 3, title = "Interstellar")),
+                popularTv = listOf(sampleTv),
+                topRatedMovies = listOf(sampleMovie),
+                topRatedTv = listOf(sampleTv.copy(id = 2, name = "The Wire")),
+            ),
+        )
+    }
+}

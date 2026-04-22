@@ -31,12 +31,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sceneseek.core.domain.model.MediaType
 import com.sceneseek.core.domain.model.WatchlistItem
 import com.sceneseek.uicore.components.EmptyState
 import com.sceneseek.uicore.components.PosterImage
+import com.sceneseek.uicore.theme.SceneSeekTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,11 +52,28 @@ fun WatchlistScreen(
     LaunchedEffect(Unit) {
         viewModel.navEvents.collect { event ->
             when (event) {
-                is WatchlistNavEvent.NavigateToDetail -> onNavigateToDetail(event.mediaId, event.mediaType)
+                is WatchlistNavEvent.NavigateToDetail -> onNavigateToDetail(
+                    event.mediaId,
+                    event.mediaType
+                )
             }
         }
     }
 
+    WatchlistContent(
+        state = state,
+        onItemClick = viewModel::onItemClicked,
+        onItemRemoved = viewModel::onItemRemoved,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun WatchlistContent(
+    state: WatchlistState,
+    onItemClick: (WatchlistItem) -> Unit = {},
+    onItemRemoved: (WatchlistItem) -> Unit = {},
+) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Watchlist") }) }
     ) { paddingValues ->
@@ -61,14 +81,19 @@ fun WatchlistScreen(
             state.isEmpty -> EmptyState(
                 message = "No saved titles yet",
                 icon = Icons.Default.Favorite,
-                modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize(),
             )
-            else -> LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+
+            else -> LazyColumn(modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()) {
                 items(state.items, key = { it.mediaId }) { item ->
                     SwipeToDismissItem(
                         item = item,
-                        onDismiss = { viewModel.onItemRemoved(item) },
-                        onClick = { viewModel.onItemClicked(item) },
+                        onDismiss = { onItemRemoved(item) },
+                        onClick = { onItemClick(item) },
                     )
                 }
             }
@@ -102,7 +127,10 @@ private fun SwipeToDismissItem(
                 MaterialTheme.colorScheme.error
             }
             Box(
-                modifier = Modifier.fillMaxSize().background(color).padding(end = 16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(end = 16.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.White)
@@ -130,12 +158,47 @@ private fun WatchlistItemRow(item: WatchlistItem, onClick: () -> Unit) {
             Text(text = item.title, style = MaterialTheme.typography.bodyLarge)
             Text(
                 text = when (item.mediaType) {
-                    is com.sceneseek.core.domain.model.MediaType.Movie -> "Movie"
-                    is com.sceneseek.core.domain.model.MediaType.TvShow -> "TV Show"
+                    is MediaType.Movie -> "Movie"
+                    is MediaType.TvShow -> "TV Show"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WatchlistScreenPreview() {
+    SceneSeekTheme {
+        WatchlistContent(
+            state = WatchlistState(
+                items = listOf(
+                    WatchlistItem(
+                        mediaId = 1,
+                        mediaType = MediaType.Movie,
+                        title = "The Matrix",
+                        posterPath = null,
+                        addedAt = System.currentTimeMillis()
+                    ),
+                    WatchlistItem(
+                        2,
+                        MediaType.TvShow,
+                        "Breaking Bad",
+                        null,
+                        System.currentTimeMillis()
+                    ),
+                ),
+            ),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WatchlistEmptyPreview() {
+    SceneSeekTheme {
+        WatchlistContent(state = WatchlistState(isEmpty = true))
     }
 }
