@@ -16,6 +16,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    composeCompiler {
+        stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.txt")
+        reportsDestination = layout.buildDirectory.dir("compose-reports")
+    }
     testOptions {
         unitTests.all { it.useJUnitPlatform() }
     }
