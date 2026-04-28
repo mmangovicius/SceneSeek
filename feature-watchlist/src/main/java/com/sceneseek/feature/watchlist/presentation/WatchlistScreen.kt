@@ -112,12 +112,15 @@ private fun SwipeToDismissItem(
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDismiss()
-                true
-            } else false
+            value == SwipeToDismissBoxValue.EndToStart
         }
     )
+
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            onDismiss()
+        }
+    }
 
     SwipeToDismissBox(
         state = dismissState,
