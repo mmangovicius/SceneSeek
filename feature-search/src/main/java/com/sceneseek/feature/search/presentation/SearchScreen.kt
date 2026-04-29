@@ -51,7 +51,10 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         viewModel.navEvents.collect { event ->
             when (event) {
-                is SearchNavEvent.NavigateToDetail -> onNavigateToDetail(event.mediaId, event.mediaType)
+                is SearchNavEvent.NavigateToDetail -> onNavigateToDetail(
+                    event.mediaId,
+                    event.mediaType,
+                )
             }
         }
     }
@@ -86,7 +89,10 @@ internal fun SearchContent(
         ) {}
 
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            state.isLoading -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize(),
+            ) {
                 CircularProgressIndicator()
             }
 
@@ -117,10 +123,10 @@ internal fun SearchContent(
                     if (state.isLoadingMore) {
                         item {
                             Box(
-                                Modifier
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
-                                contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
                             }
@@ -138,13 +144,19 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
     val tvLabel = stringResource(R.string.search_media_type_tv)
     val (id, title, posterPath, year, typeLabel) = when (item) {
         is MediaItem.MovieItem -> MediaListItemData(
-            item.movie.id, item.movie.title, item.movie.posterPath,
-            item.movie.releaseDate.take(4), movieLabel
+            id = item.movie.id,
+            title = item.movie.title,
+            posterPath = item.movie.posterPath,
+            year = item.movie.releaseDate.take(4),
+            typeLabel = movieLabel,
         )
 
         is MediaItem.TvItem -> MediaListItemData(
-            item.tvShow.id, item.tvShow.name, item.tvShow.posterPath,
-            item.tvShow.firstAirDate.take(4), tvLabel
+            id = item.tvShow.id,
+            title = item.tvShow.name,
+            posterPath = item.tvShow.posterPath,
+            year = item.tvShow.firstAirDate.take(4),
+            typeLabel = tvLabel,
         )
     }
 
@@ -158,15 +170,21 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
         PosterImage(
             path = posterPath,
             modifier = Modifier.size(60.dp, 90.dp),
-            contentDescription = stringResource(R.string.search_item_description, title, typeLabel)
+            contentDescription = stringResource(R.string.search_item_description, title, typeLabel),
         )
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, style = MaterialTheme.typography.bodyLarge)
             Row {
-                AssistChip(onClick = {}, label = { Text(year) })
+                AssistChip(
+                    onClick = {},
+                    label = { Text(year) },
+                )
                 Spacer(Modifier.width(8.dp))
-                AssistChip(onClick = {}, label = { Text(typeLabel) })
+                AssistChip(
+                    onClick = {},
+                    label = { Text(typeLabel) },
+                )
             }
         }
     }
@@ -175,8 +193,11 @@ private fun MediaListItem(item: MediaItem, onClick: () -> Unit) {
 private const val PREFETCH_DISTANCE = 3
 
 private data class MediaListItemData(
-    val id: Int, val title: String, val posterPath: String?,
-    val year: String, val typeLabel: String,
+    val id: Int,
+    val title: String,
+    val posterPath: String?,
+    val year: String,
+    val typeLabel: String,
 )
 
 @Preview(showBackground = true)
@@ -191,7 +212,7 @@ private fun SearchScreenPreview() {
                 backdropPath = null,
                 overview = "",
                 voteAverage = 8.7,
-                releaseDate = "1999-03-31"
+                releaseDate = "1999-03-31",
             )
         ),
         MediaItem.TvItem(
@@ -202,7 +223,7 @@ private fun SearchScreenPreview() {
                 backdropPath = null,
                 overview = "",
                 voteAverage = 9.5,
-                firstAirDate = "2008-01-20"
+                firstAirDate = "2008-01-20",
             )
         ),
     )

@@ -32,13 +32,22 @@ class RemoteMovieRepository @Inject constructor(
 ) : MovieRepository {
 
     override fun getPopularMovies(page: Int): Flow<Result<List<Movie>>> =
-        fetchMovies(CacheCategory.POPULAR, page) { movieService.getPopular(page) }
+        fetchMovies(
+            category = CacheCategory.POPULAR,
+            page = page,
+        ) { movieService.getPopular(page) }
 
     override fun getTrendingMovies(page: Int): Flow<Result<List<Movie>>> =
-        fetchMovies(CacheCategory.TRENDING, page) { movieService.getTrending(page = page) }
+        fetchMovies(
+            category = CacheCategory.TRENDING,
+            page = page,
+        ) { movieService.getTrending(page = page) }
 
     override fun getTopRatedMovies(page: Int): Flow<Result<List<Movie>>> =
-        fetchMovies(CacheCategory.TOP_RATED, page) { movieService.getTopRated(page) }
+        fetchMovies(
+            category = CacheCategory.TOP_RATED,
+            page = page,
+        ) { movieService.getTopRated(page) }
 
     private fun fetchMovies(
         category: String,
@@ -108,10 +117,10 @@ class RemoteMovieRepository @Inject constructor(
                 Result.Success(
                     result.data.cast.map {
                         Cast(
-                            it.id,
-                            it.name,
-                            it.character,
-                            it.profilePath
+                            id = it.id,
+                            name = it.name,
+                            character = it.character,
+                            profilePath = it.profilePath,
                         )
                     }
                 )
@@ -129,7 +138,12 @@ class RemoteMovieRepository @Inject constructor(
             is Result.Success -> emit(
                 Result.Success(
                     result.data.results.map {
-                        Trailer(it.key, it.name, it.site, it.type)
+                        Trailer(
+                            key = it.key,
+                            name = it.name,
+                            site = it.site,
+                            type = it.type,
+                        )
                     }
                 )
             )
@@ -141,19 +155,22 @@ class RemoteMovieRepository @Inject constructor(
 
     override fun getSimilarMovies(id: Int, page: Int): Flow<Result<List<Movie>>> = safeFlow {
         emit(Result.Loading)
-        val result = movieService.getSimilar(id, page).toResult()
+        val result = movieService.getSimilar(
+            id = id,
+            page = page,
+        ).toResult()
         when (result) {
             is Result.Success -> emit(
                 Result.Success(
                     result.data.results.map { dto ->
                         Movie(
-                            dto.id,
-                            dto.title,
-                            dto.posterPath,
-                            dto.backdropPath,
-                            dto.overview,
-                            dto.voteAverage,
-                            dto.releaseDate
+                            id = dto.id,
+                            title = dto.title,
+                            posterPath = dto.posterPath,
+                            backdropPath = dto.backdropPath,
+                            overview = dto.overview,
+                            voteAverage = dto.voteAverage,
+                            releaseDate = dto.releaseDate,
                         )
                     }
                 )
@@ -164,11 +181,25 @@ class RemoteMovieRepository @Inject constructor(
         }
     }
 
-    private fun MovieEntity.toDomain() =
-        Movie(id, title, posterPath, backdropPath, overview, voteAverage, releaseDate)
+    private fun MovieEntity.toDomain() = Movie(
+        id = id,
+        title = title,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        overview = overview,
+        voteAverage = voteAverage,
+        releaseDate = releaseDate,
+    )
 
-    private fun MovieDto.toDomain() =
-        Movie(id, title, posterPath, backdropPath, overview, voteAverage, releaseDate)
+    private fun MovieDto.toDomain() = Movie(
+        id = id,
+        title = title,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        overview = overview,
+        voteAverage = voteAverage,
+        releaseDate = releaseDate,
+    )
 
     private fun MovieDto.toEntity(category: String) = MovieEntity(
         id = id,

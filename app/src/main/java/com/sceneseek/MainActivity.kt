@@ -53,9 +53,13 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
-                }
+                    }
                 ) { innerPadding ->
-                    NavHost(navController = navController, startDestination = Screen.Home.route, modifier = Modifier.padding(innerPadding)) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Home.route,
+                        modifier = Modifier.padding(innerPadding),
+                    ) {
                         composable(Screen.Home.route) {
                             HomeScreen(
                                 onNavigateToDetail = { id, type ->
@@ -82,13 +86,13 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(
                                 androidx.navigation.navArgument("mediaId") { type = androidx.navigation.NavType.IntType },
                                 androidx.navigation.navArgument("mediaType") { type = androidx.navigation.NavType.StringType },
-                            )
+                            ),
                         ) {
                             DetailScreen(
                                 onNavigateBack = { navController.popBackStack() },
                                 onNavigateToDetail = { id, type ->
                                     navController.navigate(Screen.Detail.createRoute(id, type))
-                                }
+                                },
                             )
                         }
                     }

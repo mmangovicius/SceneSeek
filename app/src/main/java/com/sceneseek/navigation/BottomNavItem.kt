@@ -9,7 +9,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageVector)
 
 val bottomNavItems = listOf(
-    BottomNavItem(Screen.Home, "Home", Icons.Default.Home),
-    BottomNavItem(Screen.Search, "Search", Icons.Default.Search),
-    BottomNavItem(Screen.Watchlist, "Watchlist", Icons.Default.Star),
+    BottomNavItem(
+        screen = Screen.Home,
+        label = "Home",
+        icon = Icons.Default.Home,
+    ),
+    BottomNavItem(
+        screen = Screen.Search,
+        label = "Search",
+        icon = Icons.Default.Search,
+    ),
+    BottomNavItem(
+        screen = Screen.Watchlist,
+        label = "Watchlist",
+        icon = Icons.Default.Star,
+    ),
 )

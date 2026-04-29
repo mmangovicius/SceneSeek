@@ -20,8 +20,11 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, "sceneseek.db")
-            .build()
+        Room.databaseBuilder(
+            context = context,
+            klass = AppDatabase::class.java,
+            name = "sceneseek.db",
+        ).build()
 
     @Provides
     @Singleton

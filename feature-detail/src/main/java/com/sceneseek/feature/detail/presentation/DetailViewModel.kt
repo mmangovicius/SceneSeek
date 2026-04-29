@@ -120,7 +120,13 @@ class DetailViewModel @Inject constructor(
             val state = _state.value
             val title = state.movie?.title ?: state.tvShow?.name ?: ""
             val posterPath = state.movie?.posterPath ?: state.tvShow?.posterPath
-            val item = WatchlistItem(mediaId, mediaType, title, posterPath, System.currentTimeMillis())
+            val item = WatchlistItem(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterPath = posterPath,
+                addedAt = System.currentTimeMillis(),
+            )
             watchlistRepository.toggle(item)
         }
     }
@@ -135,8 +141,18 @@ class DetailViewModel @Inject constructor(
     fun onSimilarItemClicked(item: MediaItem) {
         viewModelScope.launch {
             when (item) {
-                is MediaItem.MovieItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE))
-                is MediaItem.TvItem -> _navEvents.send(DetailNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV))
+                is MediaItem.MovieItem -> _navEvents.send(
+                    DetailNavEvent.NavigateToDetail(
+                        mediaId = item.movie.id,
+                        mediaType = MediaType.KEY_MOVIE,
+                    )
+                )
+                is MediaItem.TvItem -> _navEvents.send(
+                    DetailNavEvent.NavigateToDetail(
+                        mediaId = item.tvShow.id,
+                        mediaType = MediaType.KEY_TV,
+                    )
+                )
             }
         }
     }

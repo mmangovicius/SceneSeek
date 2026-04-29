@@ -155,9 +155,9 @@ class HomeViewModel @Inject constructor(
                         copyState(
                             it,
                             PaginatedList(
-                                current.items + result.data,
-                                nextPage,
-                                result.data.isNotEmpty()
+                                items = current.items + result.data,
+                                page = nextPage,
+                                canLoadMore = result.data.isNotEmpty(),
                             )
                         )
                     }
@@ -178,8 +178,8 @@ class HomeViewModel @Inject constructor(
                 is MediaItem.MovieItem -> {
                     _navEvents.send(
                         HomeNavEvent.NavigateToDetail(
-                            item.movie.id,
-                            MediaType.KEY_MOVIE
+                            mediaId = item.movie.id,
+                            mediaType = MediaType.KEY_MOVIE,
                         )
                     )
                 }
@@ -187,8 +187,8 @@ class HomeViewModel @Inject constructor(
                 is MediaItem.TvItem -> {
                     _navEvents.send(
                         HomeNavEvent.NavigateToDetail(
-                            item.tvShow.id,
-                            MediaType.KEY_TV
+                            mediaId = item.tvShow.id,
+                            mediaType = MediaType.KEY_TV,
                         )
                     )
                 }

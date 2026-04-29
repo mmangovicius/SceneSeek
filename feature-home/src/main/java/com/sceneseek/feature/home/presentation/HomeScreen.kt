@@ -59,7 +59,7 @@ fun HomeScreen(
             when (event) {
                 is HomeNavEvent.NavigateToDetail -> onNavigateToDetail(
                     event.mediaId,
-                    event.mediaType
+                    event.mediaType,
                 )
             }
         }
@@ -184,19 +184,19 @@ private fun ContentRow(
             items(items) { item ->
                 val (id, posterPath, title2, rating, mediaType) = when (item) {
                     is MediaItem.MovieItem -> MediaCardData(
-                        item.movie.id,
-                        item.movie.posterPath,
-                        item.movie.title,
-                        item.movie.voteAverage,
-                        MediaType.KEY_MOVIE,
+                        id = item.movie.id,
+                        posterPath = item.movie.posterPath,
+                        title = item.movie.title,
+                        voteAverage = item.movie.voteAverage,
+                        mediaType = MediaType.KEY_MOVIE,
                     )
 
                     is MediaItem.TvItem -> MediaCardData(
-                        item.tvShow.id,
-                        item.tvShow.posterPath,
-                        item.tvShow.name,
-                        item.tvShow.voteAverage,
-                        MediaType.KEY_TV,
+                        id = item.tvShow.id,
+                        posterPath = item.tvShow.posterPath,
+                        title = item.tvShow.name,
+                        voteAverage = item.tvShow.voteAverage,
+                        mediaType = MediaType.KEY_TV,
                     )
                 }
                 MediaCard(
@@ -221,7 +221,7 @@ private fun ShimmerHomeContent() {
                     .fillMaxWidth(0.4f))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(4) { ShimmerEffect(modifier = Modifier.width(120.dp)) }
                 }

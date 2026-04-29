@@ -50,7 +50,12 @@ class WatchlistViewModel @Inject constructor(
 
     fun onItemClicked(item: WatchlistItem) {
         viewModelScope.launch {
-            _navEvents.send(WatchlistNavEvent.NavigateToDetail(item.mediaId, item.mediaType.key))
+            _navEvents.send(
+                WatchlistNavEvent.NavigateToDetail(
+                    mediaId = item.mediaId,
+                    mediaType = item.mediaType.key,
+                )
+            )
         }
     }
 

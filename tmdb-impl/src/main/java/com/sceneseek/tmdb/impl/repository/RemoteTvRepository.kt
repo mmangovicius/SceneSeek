@@ -32,13 +32,22 @@ class RemoteTvRepository @Inject constructor(
 ) : TvRepository {
 
     override fun getPopularTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.POPULAR, page) { tvService.getPopular(page) }
+        fetchTvShows(
+            category = CacheCategory.POPULAR,
+            page = page,
+        ) { tvService.getPopular(page) }
 
     override fun getTrendingTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.TRENDING, page) { tvService.getTrending(page = page) }
+        fetchTvShows(
+            category = CacheCategory.TRENDING,
+            page = page,
+        ) { tvService.getTrending(page = page) }
 
     override fun getTopRatedTv(page: Int): Flow<Result<List<TvShow>>> =
-        fetchTvShows(CacheCategory.TOP_RATED, page) { tvService.getTopRated(page) }
+        fetchTvShows(
+            category = CacheCategory.TOP_RATED,
+            page = page,
+        ) { tvService.getTopRated(page) }
 
     private fun fetchTvShows(
         category: String,
@@ -107,7 +116,12 @@ class RemoteTvRepository @Inject constructor(
             is Result.Success -> emit(
                 Result.Success(
                     result.data.cast.map {
-                        Cast(it.id, it.name, it.character, it.profilePath)
+                        Cast(
+                            id = it.id,
+                            name = it.name,
+                            character = it.character,
+                            profilePath = it.profilePath,
+                        )
                     }
                 )
             )
@@ -125,12 +139,13 @@ class RemoteTvRepository @Inject constructor(
                 Result.Success(
                     result.data.results.map {
                         Trailer(
-                            it.key,
-                            it.name,
-                            it.site,
-                            it.type
+                            key = it.key,
+                            name = it.name,
+                            site = it.site,
+                            type = it.type,
                         )
-                    })
+                    }
+                )
             )
 
             is Result.Error -> emit(Result.Error(result.throwable))
@@ -140,7 +155,10 @@ class RemoteTvRepository @Inject constructor(
 
     override fun getSimilarTv(id: Int, page: Int): Flow<Result<List<TvShow>>> = safeFlow {
         emit(Result.Loading)
-        val result = tvService.getSimilar(id, page).toResult()
+        val result = tvService.getSimilar(
+            id = id,
+            page = page,
+        ).toResult()
         when (result) {
             is Result.Success -> emit(Result.Success(result.data.results.map { it.toDomain() }))
             is Result.Error -> emit(Result.Error(result.throwable))
@@ -148,11 +166,26 @@ class RemoteTvRepository @Inject constructor(
         }
     }
 
-    private fun TvShowEntity.toDomain() =
-        TvShow(id, name, posterPath, backdropPath, overview, voteAverage, firstAirDate)
+    private fun TvShowEntity.toDomain() = TvShow(
+        id = id,
+        name = name,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        overview = overview,
+        voteAverage = voteAverage,
+        firstAirDate = firstAirDate,
+    )
 
     private fun TvShowDto.toDomain() =
-        TvShow(id, name, posterPath, backdropPath, overview, voteAverage, firstAirDate)
+        TvShow(
+            id = id,
+            name = name,
+            posterPath = posterPath,
+            backdropPath = backdropPath,
+            overview = overview,
+            voteAverage = voteAverage,
+            firstAirDate = firstAirDate,
+        )
 
     private fun TvShowDto.toEntity(category: String) = TvShowEntity(
         id = id,

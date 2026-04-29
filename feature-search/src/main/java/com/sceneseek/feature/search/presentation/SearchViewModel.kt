@@ -60,20 +60,24 @@ class SearchViewModel @Inject constructor(
         queryFlow
             .debounce(300L)
             .filter { it.length > 1 }
-            .flatMapLatest { query -> searchRepository.search(query, 1) }
+            .flatMapLatest { query -> searchRepository.search(query = query, page = 1) }
             .onEach { result ->
                 when (result) {
                     is Result.Loading -> _state.update { it.copy(isLoading = true, error = null) }
-                    is Result.Success -> _state.update { it.copy(
-                        isLoading = false,
-                        results = PaginatedList(result.data),
-                        isEmpty = result.data.isEmpty(),
-                        error = null,
-                    )}
-                    is Result.Error -> _state.update { it.copy(
-                        isLoading = false,
-                        error = result.throwable.message,
-                    )}
+                    is Result.Success -> _state.update {
+                        it.copy(
+                            isLoading = false,
+                            results = PaginatedList(result.data),
+                            isEmpty = result.data.isEmpty(),
+                            error = null,
+                        )
+                    }
+                    is Result.Error -> _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.throwable.message,
+                        )
+                    }
                 }
             }
             .launchIn(viewModelScope)
@@ -93,10 +97,16 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             when (item) {
                 is MediaItem.MovieItem -> _navEvents.send(
-                    SearchNavEvent.NavigateToDetail(item.movie.id, MediaType.KEY_MOVIE)
+                    SearchNavEvent.NavigateToDetail(
+                        mediaId = item.movie.id,
+                        mediaType = MediaType.KEY_MOVIE,
+                    )
                 )
                 is MediaItem.TvItem -> _navEvents.send(
-                    SearchNavEvent.NavigateToDetail(item.tvShow.id, MediaType.KEY_TV)
+                    SearchNavEvent.NavigateToDetail(
+                        mediaId = item.tvShow.id,
+                        mediaType = MediaType.KEY_TV,
+                    )
                 )
             }
         }
@@ -108,16 +118,23 @@ class SearchViewModel @Inject constructor(
         val nextPage = state.results.page + 1
         viewModelScope.launch {
             _state.update { it.copy(isLoadingMore = true) }
-            searchRepository.search(state.query, nextPage).collect { result ->
+            searchRepository.search(query = state.query, page = nextPage).collect { result ->
                 when (result) {
                     is Result.Success -> _state.update {
                         it.copy(
-                            results = PaginatedList(it.results.items + result.data, nextPage, result.data.isNotEmpty()),
+                            results = PaginatedList(
+                                items = it.results.items + result.data,
+                                page = nextPage,
+                                canLoadMore = result.data.isNotEmpty(),
+                            ),
                             isLoadingMore = false,
                         )
                     }
                     is Result.Error -> _state.update {
-                        it.copy(results = it.results.copy(canLoadMore = false), isLoadingMore = false)
+                        it.copy(
+                            results = it.results.copy(canLoadMore = false),
+                            isLoadingMore = false,
+                        )
                     }
                     else -> {}
                 }

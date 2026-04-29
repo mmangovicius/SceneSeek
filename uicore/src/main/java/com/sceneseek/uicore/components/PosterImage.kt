@@ -28,10 +28,10 @@ fun PosterImage(
         error = {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 ShimmerEffect(modifier = Modifier.fillMaxSize())
             }
-        }
+        },
     )
 }

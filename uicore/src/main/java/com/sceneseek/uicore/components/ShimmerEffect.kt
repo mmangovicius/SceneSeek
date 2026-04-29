@@ -22,9 +22,9 @@ fun ShimmerEffect(modifier: Modifier = Modifier) {
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1200),
-            repeatMode = RepeatMode.Restart
+            repeatMode = RepeatMode.Restart,
         ),
-        label = "shimmer_translate"
+        label = "shimmer_translate",
     )
 
     val shimmerColors = listOf(
@@ -36,7 +36,7 @@ fun ShimmerEffect(modifier: Modifier = Modifier) {
     val brush = Brush.linearGradient(
         colors = shimmerColors,
         start = Offset(translateAnim - 200f, translateAnim - 200f),
-        end = Offset(translateAnim, translateAnim)
+        end = Offset(translateAnim, translateAnim),
     )
 
     Box(modifier = modifier.background(brush))

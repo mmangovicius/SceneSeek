@@ -56,7 +56,7 @@ fun WatchlistScreen(
             when (event) {
                 is WatchlistNavEvent.NavigateToDetail -> onNavigateToDetail(
                     event.mediaId,
-                    event.mediaType
+                    event.mediaType,
                 )
             }
         }
@@ -138,7 +138,11 @@ private fun SwipeToDismissItem(
                     .padding(end = 16.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.watchlist_remove), tint = Color.White)
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.watchlist_remove),
+                    tint = Color.White,
+                )
             }
         },
         content = {
@@ -185,14 +189,14 @@ private fun WatchlistScreenPreview() {
                         mediaType = MediaType.Movie,
                         title = "The Matrix",
                         posterPath = null,
-                        addedAt = System.currentTimeMillis()
+                        addedAt = System.currentTimeMillis(),
                     ),
                     WatchlistItem(
-                        2,
-                        MediaType.TvShow,
-                        "Breaking Bad",
-                        null,
-                        System.currentTimeMillis()
+                        mediaId = 2,
+                        mediaType = MediaType.TvShow,
+                        title = "Breaking Bad",
+                        posterPath = null,
+                        addedAt = System.currentTimeMillis(),
                     ),
                 ),
             ),

@@ -22,19 +22,36 @@ class RemoteSearchRepository @Inject constructor(
 
     override fun search(query: String, page: Int): Flow<Result<List<MediaItem>>> = safeFlow {
         emit(Result.Loading)
-        val result = searchService.searchMulti(query, page).toResult()
+        val result = searchService.searchMulti(
+            query = query,
+            page = page,
+        ).toResult()
         when (result) {
             is Result.Success -> {
                 val items = result.data.results.mapNotNull { dto ->
                     when (dto.mediaType) {
-                        MediaType.KEY_MOVIE -> MediaItem.MovieItem(Movie(
-                            dto.id, dto.title ?: "", dto.posterPath, null,
-                            dto.overview ?: "", dto.voteAverage ?: 0.0, dto.releaseDate ?: ""
-                        ))
-                        MediaType.KEY_TV -> MediaItem.TvItem(TvShow(
-                            dto.id, dto.name ?: "", dto.posterPath, null,
-                            dto.overview ?: "", dto.voteAverage ?: 0.0, dto.firstAirDate ?: ""
-                        ))
+                        MediaType.KEY_MOVIE -> MediaItem.MovieItem(
+                            Movie(
+                                id = dto.id,
+                                title = dto.title ?: "",
+                                posterPath = dto.posterPath,
+                                backdropPath = null,
+                                overview = dto.overview ?: "",
+                                voteAverage = dto.voteAverage ?: 0.0,
+                                releaseDate = dto.releaseDate ?: "",
+                            )
+                        )
+                        MediaType.KEY_TV -> MediaItem.TvItem(
+                            TvShow(
+                                id = dto.id,
+                                name = dto.name ?: "",
+                                posterPath = dto.posterPath,
+                                backdropPath = null,
+                                overview = dto.overview ?: "",
+                                voteAverage = dto.voteAverage ?: 0.0,
+                                firstAirDate = dto.firstAirDate ?: "",
+                            )
+                        )
                         else -> null // skip person
                     }
                 }

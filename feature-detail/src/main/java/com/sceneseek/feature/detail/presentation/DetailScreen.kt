@@ -79,7 +79,7 @@ fun DetailScreen(
 
                 is DetailNavEvent.NavigateToDetail -> onNavigateToDetail(
                     event.mediaId,
-                    event.mediaType
+                    event.mediaType,
                 )
             }
         }
@@ -117,29 +117,38 @@ private fun DetailContent(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.detail_back))
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.detail_back),
+                        )
                     }
                 },
                 actions = {
                     if (state.isWatchlisted) {
                         FilledIconButton(onClick = onWatchlistToggle) {
-                            Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.detail_remove_from_watchlist))
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = stringResource(R.string.detail_remove_from_watchlist),
+                            )
                         }
                     } else {
                         OutlinedIconButton(onClick = onWatchlistToggle) {
-                            Icon(Icons.Outlined.Star, contentDescription = stringResource(R.string.detail_add_to_watchlist))
+                            Icon(
+                                imageVector = Icons.Outlined.Star,
+                                contentDescription = stringResource(R.string.detail_add_to_watchlist),
+                            )
                         }
                     }
-                }
+                },
             )
         }
     ) { paddingValues ->
         when {
             state.isLoading -> Box(
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 androidx.compose.material3.CircularProgressIndicator()
             }
@@ -167,19 +176,28 @@ private fun DetailContent(
                 // Title + metadata
                 item {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = title, style = MaterialTheme.typography.headlineMedium)
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
                         Row(
                             modifier = Modifier.padding(top = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Text(text = year, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = year,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                             Text(
                                 text = stringResource(R.string.detail_rating, voteAverage),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
                             )
                         }
                         Spacer(Modifier.height(8.dp))
-                        Text(text = overview, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = overview,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
                 }
                 // Cast
@@ -188,7 +206,7 @@ private fun DetailContent(
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             items(state.cast) { cast ->
                                 CastItem(cast = cast)
@@ -202,12 +220,13 @@ private fun DetailContent(
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             items(state.trailers) { trailer ->
                                 TrailerCard(
                                     trailer = trailer,
-                                    onClick = { onTrailerClick(trailer) })
+                                    onClick = { onTrailerClick(trailer) },
+                                )
                             }
                         }
                     }
@@ -218,7 +237,7 @@ private fun DetailContent(
                     item {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             items(state.similar) { item ->
                                 val (posterPath2, simTitle, rating2) = when (item) {
@@ -239,7 +258,7 @@ private fun DetailContent(
                                     title = simTitle,
                                     voteAverage = rating2,
                                     onClick = { onSimilarClick(item) },
-                                    modifier = Modifier.width(120.dp)
+                                    modifier = Modifier.width(120.dp),
                                 )
                             }
                         }
@@ -253,29 +272,45 @@ private fun DetailContent(
 @Composable
 private fun SectionHeader(title: String) {
     Text(
-        text = title, style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
     )
 }
 
 @Composable
 private fun CastItem(cast: Cast) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(72.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(72.dp),
+    ) {
         AsyncImage(
             model = TmdbImageUrlBuilder.buildUrl(cast.profilePath, ImageSize.W185),
             contentDescription = cast.name,
             modifier = Modifier
                 .size(48.dp)
-                .clip(CircleShape), contentScale = ContentScale.Crop
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
         )
-        Text(text = cast.name, style = MaterialTheme.typography.labelSmall, maxLines = 2)
-        Text(text = cast.character, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+        Text(
+            text = cast.name,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 2,
+        )
+        Text(
+            text = cast.character,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+        )
     }
 }
 
 @Composable
 private fun TrailerCard(trailer: Trailer, onClick: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.width(160.dp)) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.width(160.dp),
+    ) {
         Box {
             AsyncImage(
                 model = "https://img.youtube.com/vi/${trailer.key}/mqdefault.jpg",
@@ -283,21 +318,21 @@ private fun TrailerCard(trailer: Trailer, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
             )
             Icon(
-                Icons.Default.PlayArrow,
+                imageVector = Icons.Default.PlayArrow,
                 contentDescription = stringResource(R.string.detail_play),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(40.dp)
+                    .size(40.dp),
             )
         }
         Text(
             text = trailer.name,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(8.dp),
-            maxLines = 2
+            maxLines = 2,
         )
     }
 }
@@ -314,14 +349,30 @@ private fun DetailScreenPreview() {
                     posterPath = null,
                     backdropPath = null,
                     overview = "A computer hacker learns about the true nature of reality.",
-                    voteAverage = 8.7, releaseDate = "1999-03-31",
+                    voteAverage = 8.7,
+                    releaseDate = "1999-03-31",
                 ),
                 cast = listOf(
-                    Cast(1, "Keanu Reeves", "Neo", null),
-                    Cast(2, "Laurence Fishburne", "Morpheus", null),
+                    Cast(
+                        id = 1,
+                        name = "Keanu Reeves",
+                        character = "Neo",
+                        profilePath = null,
+                    ),
+                    Cast(
+                        id = 2,
+                        name = "Laurence Fishburne",
+                        character = "Morpheus",
+                        profilePath = null,
+                    ),
                 ),
                 trailers = listOf(
-                    Trailer("abc", "Official Trailer", "YouTube", "Trailer"),
+                    Trailer(
+                        key = "abc",
+                        name = "Official Trailer",
+                        site = "YouTube",
+                        type = "Trailer",
+                    ),
                 ),
                 isLoading = false,
                 isWatchlisted = true,
